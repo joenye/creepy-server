@@ -1,10 +1,11 @@
+"""Provides API routes"""
 import json
 import flask
 import logging
-import marshmallow
+from marshmallow import fields, Schema
 
 import database
-from game import actions
+from game import dm
 from tiles import builder, cavern, tunnel
 from common.direction import Direction
 
@@ -17,23 +18,19 @@ api = flask.Blueprint('api', __name__)
 #                             Marshalling                             #
 #######################################################################
 
-class PositionSchema(marshmallow.Schema):
-    x = marshmallow.fields.Integer()
-    y = marshmallow.fields.Integer()
-    z = marshmallow.fields.Integer()
+class PositionSchema(Schema):
+    x = fields.Integer()
+    y = fields.Integer()
+    z = fields.Integer()
 
 
-class ActionSchema(marshmallow.Schema):
-    pass
+class NavigateSchema(Schema):
+    background = fields.String()
+    current_position = fields.Nested(PositionSchema)
+    available_actions = fields.String(many=True)
 
 
-class NavigateSchema(marshmallow.Schema):
-    background = marshmallow.fields.String()
-    current_position = marshmallow.fields.Nested(PositionSchema)
-    available_actions = marshmallow.fields.Nested(ActionSchema, many=True)
-
-
-def marshal(data, schema: marshmallow.Schema = None, is_json: bool = True):
+def marshal(data, schema: Schema = None, is_json: bool = True):
     if schema:
         is_list = isinstance(data, list)
         data = schema.dump(data, many=is_list)
@@ -47,7 +44,7 @@ def marshal(data, schema: marshmallow.Schema = None, is_json: bool = True):
 
 @api.route('/current')
 def current():
-    current_pos = actions.get_current_position()
+    current_pos = dm.get_or_update_current_position()
 
     tile = builder.get_or_create_tile(current_pos)
     background = tile['background']
@@ -56,7 +53,7 @@ def current():
     resp = {
         'background': background,
         'current_position': current_pos,
-        'available_actions': ['a', 'b', 'c'],
+        'available_actions': dm.get_available_actions(),
     }
     return marshal(resp, schema=NavigateSchema()), 200
 
@@ -66,9 +63,11 @@ def navigate():
     direction_str = flask.request.args.get('direction')
     direction = Direction.from_string(direction_str)
 
-    current_pos = actions.get_current_position()
+    current_pos = dm.get_or_update_current_position()
     target_pos = current_pos.translate(direction)
 
+    # TODO: Store available actions in db and validate the intended action
+    # is inside the list of available actions
     current_tile = database.get_tile(current_pos)
     if current_tile['sides'][direction.value]['is_blocked']:
         # The way is shut
@@ -76,17 +75,13 @@ def navigate():
 
     # Fetch tile and update position
     tile = builder.get_or_create_tile(target_pos)
-    background = tile['background']
     database.update_current_position(target_pos)
-    current_pos = target_pos
-
-    # TODO: Calculate available actions
 
     # Build response
     resp = {
-        'background': background,
-        'current_position': current_pos,
-        'available_actions': ['a', 'b', 'c'],
+        'background': tile['background'],
+        'current_position': target_pos,
+        'available_actions': dm.get_available_actions(),
     }
     return marshal(resp, schema=NavigateSchema()), 200
 

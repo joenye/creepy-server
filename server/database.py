@@ -1,3 +1,4 @@
+"""Allows read/write to a MongoDB instance"""
 import logging
 import pymongo
 

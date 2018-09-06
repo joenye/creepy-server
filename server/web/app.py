@@ -1,3 +1,4 @@
+"""Configures a Flask app, readying it for execution"""
 from flask import Flask
 
 
