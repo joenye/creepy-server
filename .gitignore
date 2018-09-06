@@ -1,0 +1,17 @@
+# vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
+Session.vim
+.netrwhist
+*~
+tags
+
+# byte-compiled / optimized / DLL files
+__pycache__
+*.py[cod]
+.mypy_cache/
+
+# svg output
+output

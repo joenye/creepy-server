@@ -1,0 +1,4 @@
+flask==1.0.2
+flask-cors==3.0.6
+pymongo==3.7.1
+svgwrite==1.1.12

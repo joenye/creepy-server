@@ -1,0 +1,27 @@
+version: '3'
+
+volumes:
+  db-data:
+
+services:
+  db:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - db-data:/data/db
+
+  server:
+    build: ./
+    image: creepy-server
+    env_file: .env
+    restart: always
+    links:
+      - db
+    ports:
+      - 5001:5001
+    volumes:
+      - ./:/usr/src/creepy-server
