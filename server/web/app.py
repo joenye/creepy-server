@@ -8,6 +8,7 @@ def create_app():
     _configure_settings(app)
     _configure_cors(app)
     _configure_controllers(app)
+    _configure_error_handler(app)
     _configure_response(app)
     return app
 
@@ -30,8 +31,15 @@ def _configure_controllers(app):
     return app
 
 
+def _configure_error_handler(app):
+    from web import error_handler
+    error_handler.init_api(app)
+    return app
+
+
 def _configure_response(app):
     @app.after_request
     def after_request(resp):
         resp.headers['Content-Type'] = 'application/json'
+        resp.headers['Creepy'] = 'Cave'
         return resp

@@ -1,9 +1,9 @@
 """Executes a Flask app"""
-import web
 import settings
+from web import app
 
 
-_app = web.create_app()
+_app = app.create_app()
 
 if __name__ == '__main__':
     host = settings.FLASK_HOST

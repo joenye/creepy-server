@@ -1,11 +1,11 @@
-"""Provides API routes"""
-import json
+"""Configures routes"""
 import flask
 import logging
 from marshmallow import fields, Schema
 
 import database
 from game import dm
+from web import errors, marshal
 from tiles import builder, cavern, tunnel
 from common.direction import Direction
 
@@ -30,13 +30,6 @@ class NavigateSchema(Schema):
     available_actions = fields.String(many=True)
 
 
-def marshal(data, schema: Schema = None, is_json: bool = True):
-    if schema:
-        is_list = isinstance(data, list)
-        data = schema.dump(data, many=is_list)
-    return json.dumps(data) if is_json else data
-
-
 #######################################################################
 #                               Routes                                #
 #######################################################################
@@ -55,7 +48,7 @@ def current():
         'current_position': current_pos,
         'available_actions': dm.get_available_actions(),
     }
-    return marshal(resp, schema=NavigateSchema()), 200
+    return marshal.marshal(resp, schema=NavigateSchema()), 200
 
 
 @api.route('/navigate')
@@ -70,8 +63,7 @@ def navigate():
     # is inside the list of available actions
     current_tile = database.get_tile(current_pos)
     if current_tile['sides'][direction.value]['is_blocked']:
-        # The way is shut
-        return 'The way is shut', 403
+        raise errors.ApiForbidden
 
     # Fetch tile and update position
     tile = builder.get_or_create_tile(target_pos)
@@ -83,7 +75,7 @@ def navigate():
         'current_position': target_pos,
         'available_actions': dm.get_available_actions(),
     }
-    return marshal(resp, schema=NavigateSchema()), 200
+    return marshal.marshal(resp, schema=NavigateSchema()), 200
 
 
 #######################################################################
