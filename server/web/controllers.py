@@ -1,24 +1,64 @@
+import json
 import flask
 import logging
+import marshmallow
 
 import database
-from common.direction import Direction
-from common.point import Point
+from game import actions
 from tiles import builder, cavern, tunnel
+from common.direction import Direction
 
 logger = logging.getLogger(__name__)
 
 api = flask.Blueprint('api', __name__)
 
 
+#######################################################################
+#                             Marshalling                             #
+#######################################################################
+
+class PositionSchema(marshmallow.Schema):
+    x = marshmallow.fields.Integer()
+    y = marshmallow.fields.Integer()
+    z = marshmallow.fields.Integer()
+
+
+class ActionSchema(marshmallow.Schema):
+    pass
+
+
+class NavigateSchema(marshmallow.Schema):
+    background = marshmallow.fields.String()
+    current_position = marshmallow.fields.Nested(PositionSchema)
+    available_actions = marshmallow.fields.Nested(ActionSchema, many=True)
+
+
+def marshal(data, schema: marshmallow.Schema = None, is_json: bool = True):
+    if schema:
+        is_list = isinstance(data, list)
+        data = schema.dump(data, many=is_list)
+    return json.dumps(data) if is_json else data
+
+
+#######################################################################
+#                               Routes                                #
+#######################################################################
+
+
 @api.route('/current')
 def current():
-    current_pos = get_current_position()
+    current_pos = actions.get_current_position()
 
     tile = builder.get_or_create_tile(current_pos)
     background = tile['background']
 
-    return flask.Response(background, status=200, mimetype='text/xml')
+    # Build response
+    resp = {
+        'background': background,
+        'current_position': current_pos,
+        'available_actions': ['a', 'b', 'c'],
+    }
+    return marshal(resp, schema=NavigateSchema()), 200
 
 
 @api.route('/navigate')
@@ -26,7 +66,7 @@ def navigate():
     direction_str = flask.request.args.get('direction')
     direction = Direction.from_string(direction_str)
 
-    current_pos = get_current_position()
+    current_pos = actions.get_current_position()
     target_pos = current_pos.translate(direction)
 
     current_tile = database.get_tile(current_pos)
@@ -38,9 +78,22 @@ def navigate():
     tile = builder.get_or_create_tile(target_pos)
     background = tile['background']
     database.update_current_position(target_pos)
+    current_pos = target_pos
 
-    # TODO: Need to additionally return the current position and available actions
-    return flask.Response(background, status=200, mimetype='text/xml')
+    # TODO: Calculate available actions
+
+    # Build response
+    resp = {
+        'background': background,
+        'current_position': current_pos,
+        'available_actions': ['a', 'b', 'c'],
+    }
+    return marshal(resp, schema=NavigateSchema()), 200
+
+
+#######################################################################
+#                         Development routes                          #
+#######################################################################
 
 
 @api.route('/debug/cavern')
@@ -53,19 +106,8 @@ def get_cavern():
 def get_tunnel():
     try:
         file_dir, filename = tunnel.render_tile()
-    # TODO: Fix tile-generation bug so no need for this
+    # TODO: Fix tile-gen bug so no need for this (potentially infinite) check
     except ValueError:
         return get_tunnel()
 
     return flask.send_from_directory(file_dir, filename)
-
-
-# TODO: Refactor into actions/engine along with other business logic in here
-def get_current_position():
-    current_pos = database.get_current_position()
-    if current_pos:
-        return current_pos
-
-    start_pos = Point(0, 0, 0)
-    database.update_current_position(start_pos)
-    return database.get_current_position()
