@@ -1,5 +1,6 @@
 """Configures a Flask app, readying it for execution"""
 from flask import Flask
+from flask_socketio import SocketIO
 
 
 def create_app():
@@ -7,10 +8,15 @@ def create_app():
 
     _configure_settings(app)
     _configure_cors(app)
-    _configure_controllers(app)
-    _configure_error_handler(app)
-    _configure_response(app)
-    return app
+
+    _configure_http_handlers(app)
+    _configure_http_error_handlers(app)
+    _configure_http_response(app)
+
+    socketio = SocketIO(app)
+    _configure_socket_handlers(socketio)
+
+    return lambda *args, **kwargs: socketio.run(app, *args, **kwargs)
 
 
 def _configure_settings(app):
@@ -25,21 +31,27 @@ def _configure_cors(app):
     return app
 
 
-def _configure_controllers(app):
-    from web.controllers import api
+def _configure_http_handlers(app):
+    from web.http.handlers import api
     app.register_blueprint(api)
     return app
 
 
-def _configure_error_handler(app):
-    from web import error_handler
+def _configure_http_error_handlers(app):
+    from web.http import error_handler
     error_handler.init_api(app)
     return app
 
 
-def _configure_response(app):
+def _configure_http_response(app):
     @app.after_request
     def after_request(resp):
         resp.headers['Content-Type'] = 'application/json'
         resp.headers['Creepy'] = 'Cave'
         return resp
+
+
+def _configure_socket_handlers(socketio: SocketIO):
+    from web.socket.handlers import configure_handlers
+    configure_handlers(socketio)
+    return socketio

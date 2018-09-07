@@ -1,11 +1,12 @@
-"""Configures routes"""
-import flask
+"""Configures HTTP routes"""
 import logging
+
+import flask
 from marshmallow import fields, Schema
 
 import database
 from game import dm
-from web import errors, marshal
+from web.http import errors, marshal
 from tiles import builder, cavern, tunnel
 from common.direction import Direction
 
@@ -13,10 +14,6 @@ logger = logging.getLogger(__name__)
 
 api = flask.Blueprint('api', __name__)
 
-
-#######################################################################
-#                             Marshalling                             #
-#######################################################################
 
 class PositionSchema(Schema):
     x = fields.Integer()
@@ -28,11 +25,6 @@ class NavigateSchema(Schema):
     background = fields.String()
     current_position = fields.Nested(PositionSchema)
     available_actions = fields.String(many=True)
-
-
-#######################################################################
-#                               Routes                                #
-#######################################################################
 
 
 @api.route('/current')
@@ -69,18 +61,12 @@ def navigate():
     tile = builder.get_or_create_tile(target_pos)
     database.update_current_position(target_pos)
 
-    # Build response
     resp = {
         'background': tile['background'],
         'current_position': target_pos,
         'available_actions': dm.get_available_actions(),
     }
     return marshal.marshal(resp, schema=NavigateSchema()), 200
-
-
-#######################################################################
-#                         Development routes                          #
-#######################################################################
 
 
 @api.route('/debug/cavern')
