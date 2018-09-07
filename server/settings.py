@@ -4,7 +4,7 @@ import utils
 
 
 FLASK_HOST = os.getenv('FLASK_HOST', '0.0.0.0')
-FLASK_PORT = int(os.getenv('FLASK_PORT', 5001))
+FLASK_PORT = int(os.getenv('FLASK_PORT', 5000))
 FLASK_DEBUG = os.getenv('FLASK_DEBUG') != 'false'
 
 MONGO_HOST = os.getenv('MONGO_HOST', 'db')

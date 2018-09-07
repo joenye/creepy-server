@@ -219,8 +219,6 @@ class CavernShape:
 
             stubs[dir_] = stub
 
-            print(stub)
-
         return stubs
 
 

@@ -12,7 +12,7 @@ from common.direction import Direction
 
 logger = logging.getLogger(__name__)
 
-api = flask.Blueprint('api', __name__)
+http_api = flask.Blueprint('http_api', __name__)
 
 
 class PositionSchema(Schema):
@@ -27,7 +27,7 @@ class NavigateSchema(Schema):
     available_actions = fields.String(many=True)
 
 
-@api.route('/current')
+@http_api.route('/current')
 def current():
     current_pos = dm.get_or_update_current_position()
 
@@ -43,7 +43,7 @@ def current():
     return marshal.marshal(resp, schema=NavigateSchema()), 200
 
 
-@api.route('/navigate')
+@http_api.route('/navigate')
 def navigate():
     direction_str = flask.request.args.get('direction')
     direction = Direction.from_string(direction_str)
@@ -69,13 +69,13 @@ def navigate():
     return marshal.marshal(resp, schema=NavigateSchema()), 200
 
 
-@api.route('/debug/cavern')
+@http_api.route('/debug/cavern')
 def get_cavern():
     file_dir, filename = cavern.render_tile()
     return flask.send_from_directory(file_dir, filename)
 
 
-@api.route('/debug/tunnel')
+@http_api.route('/debug/tunnel')
 def get_tunnel():
     try:
         file_dir, filename = tunnel.render_tile()

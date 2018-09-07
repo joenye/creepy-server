@@ -1,6 +1,11 @@
 """Configures a Flask app, readying it for execution"""
+import logging
+
 from flask import Flask
 from flask_socketio import SocketIO
+
+
+logger = logging.getLogger(__name__)
 
 
 def create_app():
@@ -32,8 +37,8 @@ def _configure_cors(app):
 
 
 def _configure_http_handlers(app):
-    from web.http.handlers import api
-    app.register_blueprint(api)
+    from web.http.handlers import http_api
+    app.register_blueprint(http_api)
     return app
 
 
