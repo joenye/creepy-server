@@ -63,3 +63,11 @@ class Direction(enum.Enum):
             return cls.RIGHT
         if direction == cls.LEFT:
             return cls.DOWN
+
+    @classmethod
+    def all(cls):
+        return [d for d in cls]
+
+    @classmethod
+    def values(cls):
+        return [d.value for d in cls]

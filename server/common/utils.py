@@ -13,7 +13,7 @@ def get_data_path(relative_path: str, filename: str = '') -> str:
 
 
 def _data_directory_path(relative_path: str) -> str:
-    dirname = os.path.abspath(os.path.dirname(__file__))
+    dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
     tokens, path = dirname.split(os.sep), ['/']
     for token in tokens:

@@ -511,7 +511,7 @@ class ElbowMaker:
 
 
 def invert_y(point: Point) -> Point:
-    # TODO: Build wrapper around dwg to invert automatically and handle boilerplate
+    # TODO: Write wrapper around dwg to invert automatically and handle boilerplate
     return point.x, 400 - point.y
 
 

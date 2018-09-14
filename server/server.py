@@ -1,5 +1,7 @@
 """Executes a Flask app"""
 import settings
+settings.configure_logger()
+
 from web import app
 
 

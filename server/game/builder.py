@@ -2,11 +2,11 @@ import random
 import typing
 import logging
 
-import utils
 import database
+from common import utils
 from common.direction import Direction
 from common.point import Point
-from tiles import tunnel, cavern
+from tiles import tunnel_v2, cavern_v1
 from tiles.common.exit_config import ExitConfig
 
 logger = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ def _render_tile(tile_gen, exit_configs):
 
 def _get_tile_generator() -> callable:
     prob_cavern = 3
-    return cavern if random.randint(1, 10) <= prob_cavern else tunnel
+    return cavern_v1 if random.randint(1, 10) <= prob_cavern else tunnel_v2
 
 
 def _create_sides(target: Point) -> typing.Dict[Direction, dict]:

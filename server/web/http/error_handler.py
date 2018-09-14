@@ -1,7 +1,8 @@
 """Configures error handling"""
 import logging
 
-from web.http import errors, marshal
+from web import marshal
+from web.http import errors
 
 
 logger = logging.getLogger(__name__)

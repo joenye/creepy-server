@@ -2,7 +2,7 @@ from common.direction import Direction
 
 
 class Point:
-    """Container for x and y coordinates, as well as helper methods.
+    """Container for coordinates, as well as helper methods.
 
     :param x: x-coordinate.
     :param y: y-coordinate.
@@ -80,5 +80,5 @@ class Point:
 
     def __repr__(self):
         if self.z is not None:
-            return f"3D Point: (x={self.x}, y={self.y}, z={self.z})"
-        return f"2D Point: (x={self.x}, y={self.y})"
+            return f"(x={self.x}, y={self.y}, z={self.z})"
+        return f"(x={self.x}, y={self.y})"

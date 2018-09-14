@@ -12,13 +12,12 @@ def create_app():
     app = Flask(__name__)
 
     _configure_settings(app)
-    _configure_cors(app)
 
     _configure_http_handlers(app)
     _configure_http_error_handlers(app)
     _configure_http_response(app)
 
-    socketio = SocketIO(app)
+    socketio = SocketIO(app, engineio_logger=True)
     _configure_socket_handlers(socketio)
 
     return lambda *args, **kwargs: socketio.run(app, *args, **kwargs)
@@ -27,12 +26,6 @@ def create_app():
 def _configure_settings(app):
     import settings
     app.config.from_object(settings)
-    return app
-
-
-def _configure_cors(app):
-    import flask_cors
-    flask_cors.CORS(app)
     return app
 
 
