@@ -111,4 +111,4 @@ def _marshal_response(message: dict):
 
 
 def _emit_response(status: str, message: dict):
-    emit('json', {'status': status, 'message': _marshal_response(message)})
+    emit('json', {'status': status, 'message': _marshal_response(message)}, broadcast=True)
