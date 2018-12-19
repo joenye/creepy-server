@@ -1,6 +1,6 @@
 eventlet==0.24.1
 flask==1.0.2
-flask-socketio==3.0.2
-marshmallow==3.0.0b13
-pymongo==3.7.1
-svgwrite==1.1.12
+flask-socketio==3.1.1
+marshmallow==3.0.0rc1
+pymongo==3.7.2
+svgwrite==1.2.1
