@@ -1,6 +1,6 @@
-"""Allows read/write to a MongoDB instance"""
 import logging
 import pymongo
+import collections
 
 import settings
 from common.point import Point
@@ -14,10 +14,10 @@ def get_current_position() -> Point:
     db = _client['creepy']
     collection = db['tiles']
 
-    cursor = collection.find_one({}, {'session.current_position': 1})
+    doc = collection.find_one({}, {'session.current_position': 1})
 
-    if cursor:
-        return Point.deserialize(cursor['session']['current_position'])
+    if doc:
+        return Point.deserialize(doc['session']['current_position'])
     else:
         return None
 
@@ -30,6 +30,34 @@ def update_current_position(new_pos: Point) -> Point:
     return collection.update_one({}, {'$set': updates}, upsert=True)
 
 
+def get_all_visited_tiles():
+    """
+    Returns a dict mapping from floor to a list of visited tiles
+    """
+    db = _client['creepy']
+    collection = db['tiles']
+
+    doc = collection.find_one({
+        f"session.floors": {'$exists': True}
+    })
+    if not doc:
+        return None
+
+    floor_to_tiles = collections.defaultdict(list)
+    floors = doc['session']['floors']
+    for floor, val in floors.items():
+        for pos, tile in val['tiles'].items():
+            if not tile['is_visited']:
+                continue
+
+            point = Point.deserialize(pos)
+            point.z = int(floor)
+            tile['position'] = point
+            floor_to_tiles[floor].append(tile)
+
+    return floor_to_tiles
+
+
 def get_tile(point: Point):
     db = _client['creepy']
     collection = db['tiles']
@@ -37,14 +65,13 @@ def get_tile(point: Point):
     str_floor = str(point.z)
     str_point = point.serialize(strip_z=True)
 
-    cursor = collection.find_one({
+    doc = collection.find_one({
         f"session.floors.{str_floor}.tiles.{str_point}": {'$exists': True}
     })
+    if not doc:
+        return None
 
-    if cursor:
-        return cursor['session']['floors'][str_floor]['tiles'][str_point]
-
-    return None
+    return doc['session']['floors'][str_floor]['tiles'][str_point]
 
 
 def insert_tile(point: Point, tile: dict):

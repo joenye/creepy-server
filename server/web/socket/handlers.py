@@ -1,14 +1,14 @@
-"""Configures websocket event handlers"""
+"""Configure websocket event handlers"""
 import logging
 
 from marshmallow.validate import OneOf
-from marshmallow import fields, Schema, ValidationError
+from marshmallow import fields, Schema, ValidationError, INCLUDE
 from flask_socketio import SocketIO, emit
 
 from common.point import Point
 from web import marshal
 from game import dm, errors
-from game.constants import Action
+from game.enum import Action
 
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,15 @@ class PositionSchema(Schema):
     z = fields.Integer(required=True)
 
 
+class TileSchema(Schema):
+    background = fields.String(required=True)
+    position = fields.Nested(PositionSchema)  # Used when returning list of tiles
+
+
 class ActionSchema(Schema):
+    class Meta:
+        unknown = INCLUDE
+
     name = fields.String(required=True, validate=OneOf(Action.values()))
 
 
@@ -51,11 +59,11 @@ def configure_handlers(socketio: SocketIO):
 
         try:
             target_pos = Point(**payload['action']['target_pos'])
-        except IndexError:
+        except KeyError:
             target_pos = None
 
         try:
-            action_name = JsonSchema().load(payload)['action']['name']
+            action_name = JsonSchema().load(payload)['action']['name'].lower()
         except ValidationError as err:
             return _emit_response(
                 status='ERROR_INVALID_INPUT',
@@ -66,7 +74,9 @@ def configure_handlers(socketio: SocketIO):
             )
 
         if action_name == Action.NAVIGATE.value:
-            _handle_navigate(payload, target_pos)
+            return _handle_navigate(payload, target_pos)
+        if action_name == Action.REFRESH_ALL.value:
+            return _handle_refresh_all(payload)
 
     def _handle_navigate(payload: dict, target_pos: Point):
         try:
@@ -95,20 +105,37 @@ def configure_handlers(socketio: SocketIO):
             status='NAVIGATE_SUCCESS',
             message={
                 'new_pos': target_pos,
-                'background': tile['background'],
+                'new_tile': tile,
+            }
+        )
+
+    def _handle_refresh_all(payload: dict):
+        current_pos = dm.get_or_update_current_position()
+        all_tiles = dm.get_all_visited_tiles()
+
+        return _emit_response(
+            status='REFRESH_ALL_SUCCESS',
+            message={
+                'current_pos': current_pos,
+                'all_tiles': all_tiles,
             }
         )
 
 
-def _marshal_response(message: dict):
-    class ResponseSerializer(Schema):
-        background = fields.String()
-        errors = fields.List(fields.String())
-        new_pos = fields.Nested(PositionSchema)
-        target_pos = fields.Nested(PositionSchema)
-
-    return marshal.marshal(message, schema=ResponseSerializer())
-
-
 def _emit_response(status: str, message: dict):
     emit('json', {'status': status, 'message': _marshal_response(message)}, broadcast=True)
+
+
+def _marshal_response(message: dict):
+    class ResponseSerializer(Schema):
+        new_tile = fields.Nested(TileSchema)
+        errors = fields.List(fields.String())
+        new_pos = fields.Nested(PositionSchema)
+        current_pos = fields.Nested(PositionSchema)
+        target_pos = fields.Nested(PositionSchema)
+        all_tiles = fields.Dict(
+            keys=fields.Integer(),  # Floor
+            values=fields.Nested(TileSchema, many=True)  # List of tiles
+        )
+
+    return marshal.marshal(message, schema=ResponseSerializer())

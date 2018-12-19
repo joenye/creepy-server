@@ -1,6 +1,6 @@
 import random
-import typing
 import logging
+from typing import Dict, List
 
 import database
 from common import utils
@@ -35,6 +35,7 @@ def _create_tile(target: Point) -> dict:
         direction = Direction.from_string(direction_str)
         exit_configs.append(ExitConfig(direction, edge_position, is_blocked))
 
+    # TODO: Hand responsibility to "creator" logic
     tile_gen = _get_tile_generator()
     file_dir, filename = _render_tile(tile_gen, exit_configs)
     tile['background'] = utils.load_text_file(file_dir, filename)
@@ -42,9 +43,8 @@ def _create_tile(target: Point) -> dict:
     return tile
 
 
-def _render_tile(tile_gen, exit_configs):
+def _render_tile(tile_gen: callable, exit_configs: List[ExitConfig]):
     """Retries rendering on errors.
-
     """
     try:
         return tile_gen.render_tile(exit_configs)
@@ -53,11 +53,11 @@ def _render_tile(tile_gen, exit_configs):
 
 
 def _get_tile_generator() -> callable:
-    prob_cavern = 3
-    return cavern_v1 if random.randint(1, 10) <= prob_cavern else tunnel_v2
+    prob_cavern = 0.3
+    return cavern_v1 if random.randint(1, 10) <= (prob_cavern * 10) else tunnel_v2
 
 
-def _create_sides(target: Point) -> typing.Dict[Direction, dict]:
+def _create_sides(target: Point) -> Dict[Direction, dict]:
     sides = {}
 
     for direction in Direction:

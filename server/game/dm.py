@@ -5,7 +5,7 @@ import database
 from common.point import Point
 from common.direction import Direction
 from game import builder, errors
-from game.constants import Action
+from game.enum import Action
 
 
 logger = logging.getLogger(__name__)
@@ -42,6 +42,10 @@ def get_target_dir(current_pos: Point, target_pos):
     return None
 
 
+def get_all_visited_tiles():
+    return database.get_all_visited_tiles()
+
+
 def navigate(target_pos: Point):
     current_pos = get_or_update_current_position()
     logger.info(
@@ -74,6 +78,12 @@ def navigate(target_pos: Point):
 
     # Fetch (or create) tile and update position
     tile = builder.get_or_create_tile(target_pos)
+
+    # Mark tile as visited (prevents user from refreshing and seeing adjacent tiles
+    # which exist in the database but they have not accessed)
+    tile['is_visited'] = True
+    database.insert_tile(target_pos, tile)
+
     database.update_current_position(target_pos)
 
     logger.info(f"Successfully navigated: target_pos={target_pos}")

@@ -1,4 +1,4 @@
-"""Configures a Flask app, readying it for execution"""
+"""Configure Flask app, readying it for execution"""
 import logging
 
 from flask import Flask
@@ -45,7 +45,6 @@ def _configure_http_response(app):
     @app.after_request
     def after_request(resp):
         resp.headers['Content-Type'] = 'application/json'
-        resp.headers['Creepy'] = 'Cave'
         return resp
 
 
