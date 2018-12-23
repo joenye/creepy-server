@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(package))
 import settings
 from common.point import Point
 from common.direction import Direction as Dir
-from tiles.common import exit, exit_config, rectangle, smoothing, tile
+from renderer.common import exit, exit_config, rectangle, smoothing, tile
 
 
 class Grid:
@@ -77,7 +77,6 @@ class Path:
         self.grid_width = grid_width
         self.grid_height = grid_height
         self.exits = exits
-
         self._calculate_filled()
 
     def get_path_between(self, current: Point, target: Point,
@@ -149,8 +148,7 @@ class Path:
             self._calculate_filled()
 
     def _calculate_path(self, start: Point, target: Point) -> typing.List[Point]:
-        """Stops if we reach an element that has already been filled, or when we reach
-        the target.
+        """Stops when we reach the target or we reach a grid position already filled.
 
         """
         path: typing.List = []
@@ -159,9 +157,8 @@ class Path:
         while current != target:
             candidates = self._get_path_candidates(current, target)
 
-            for candidate in candidates:
-                if candidate in self.filled:
-                    return path
+            if any([c in self.filled for c in candidates]):
+                return path
 
             valid_candidates = []
             for candidate in candidates:
@@ -248,7 +245,7 @@ class ElbowMaker:
             if start.is_blocked:
                 # Add exit and intersection points
                 elbow = []
-                offset = 30
+                offset = 0
                 if direction == Dir.LEFT:
                     inward_dir = Dir.mirror_of(direction)
                     is_stub = start.point.translate(inward_dir) in self.path.filled
@@ -389,6 +386,7 @@ class ElbowMaker:
                     break
 
                 nex = elbow_cpy[index + 1]
+                print(elbow)
                 points_between = self._calculate_points_between(current, nex)
                 elbow = elbow[:index + offset] + points_between + elbow[index + offset:]
 
@@ -515,7 +513,7 @@ def invert_y(point: Point) -> Point:
     return point.x, 400 - point.y
 
 
-def draw_debug(dwg: svgwrite.Drawing, path: Path, grid: Grid, elbows: ElbowMaker):
+def draw_debug(dwg: svgwrite.Drawing, path: Path, grid: Grid, elbows: ElbowMaker, entities):
     for index, filled_point in enumerate(path.filled):
         rect = grid.get_rect_at(filled_point)
         dwg.add(dwg.rect(
@@ -544,8 +542,17 @@ def draw_debug(dwg: svgwrite.Drawing, path: Path, grid: Grid, elbows: ElbowMaker
                 fill="blue",
             ))
 
+    for point in entities:
+        dwg.add(dwg.circle(
+            center=invert_y(point),
+            fill="green",
+            stroke="green",
+            stroke_width=15
+        ))
+
 
 def draw_walls(dwg: svgwrite.Drawing, elbows: ElbowMaker):
+    """Draw the walls around the paths"""
     smooth_line_calc = smoothing.smooth_line(smoothing=0.2, flip_y_height=400)
     connected, stubs = elbows.connected_elbows()
     dwg.add(dwg.path(
@@ -600,6 +607,9 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
 
     elbows = ElbowMaker(grid, path)
 
+    # Valid positions for entities (e.g. stairs)
+    entities = [p * 100 for p in path.filled if (p.x > 0 and p.x < 6 and p.y > 0 and p.y < 4)]
+
     filename = 'tunnel.svg'
 
     dwg = svgwrite.Drawing(
@@ -608,17 +618,17 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
         size=(tile_.width, tile_.height)
     )
     draw_walls(dwg, elbows)
-    # draw_debug(dwg, path, grid, elbows)
+    # draw_debug(dwg, path, grid, elbows, entities)
     dwg.save()
 
-    return settings.TILE_OUTPUT_DIR, filename
+    return settings.TILE_OUTPUT_DIR, entities, filename
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     exit_configs = [
-        exit_config.ExitConfig(Dir.UP, 2, False),
-        exit_config.ExitConfig(Dir.DOWN, 2, False),
-        exit_config.ExitConfig(Dir.LEFT, 3, False),
+        exit_config.ExitConfig(Dir.UP, 4, False),
+        exit_config.ExitConfig(Dir.DOWN, 4, True),
+        exit_config.ExitConfig(Dir.LEFT, 1, False),
         exit_config.ExitConfig(Dir.RIGHT, 1, False),
     ]
     render_tile(exit_configs)

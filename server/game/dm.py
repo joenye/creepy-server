@@ -4,7 +4,7 @@ import logging
 import database
 from common.point import Point
 from common.direction import Direction
-from game import builder, errors
+from game import creator, errors
 from game.enum import Action
 
 
@@ -23,7 +23,7 @@ def get_or_update_current_position():
 
 def get_available_actions():
     current_pos = get_or_update_current_position()
-    current_tile = builder.get_or_create_tile(current_pos)
+    current_tile = creator.get_or_create_tile(current_pos)
 
     actions = []
     for side, vals in current_tile['sides'].items():
@@ -67,17 +67,17 @@ def navigate(target_pos: Point):
         raise errors.InvalidAction('That tile is too far away')
 
     # Validate current tile is not blocked on this side
-    current_tile = builder.get_or_create_tile(current_pos)
+    current_tile = creator.get_or_create_tile(current_pos)
     if current_tile['sides'][target_dir.value]['is_blocked']:
         raise errors.InvalidAction('The way is shut from this side')
 
     # Validate target tile is not blocked on the other side
-    target_tile = builder.get_or_create_tile(target_pos)
+    target_tile = creator.get_or_create_tile(target_pos)
     if target_tile['sides'][Direction.mirror_of(target_dir).value]['is_blocked']:
         raise errors.InvalidAction('The way is shut from the other side')
 
     # Fetch (or create) tile and update position
-    tile = builder.get_or_create_tile(target_pos)
+    tile = creator.get_or_create_tile(target_pos)
 
     # Mark tile as visited (prevents user from refreshing and seeing adjacent tiles
     # which exist in the database but they have not accessed)

@@ -13,7 +13,7 @@ MONGO_HOST = os.getenv('MONGO_HOST', 'db')
 MONGO_PORT = int(os.getenv('MONGO_PORT', 27017))
 MONGO_DEFAULT_DB = os.getenv('MONGO_DEFAULT_DB', 'db')
 
-TILE_OUTPUT_DIR = os.getenv('TILE_OUTPUT_DIR', utils.get_data_path('tiles/output'))
+TILE_OUTPUT_DIR = os.getenv('TILE_OUTPUT_DIR', utils.get_data_path('renderer/output'))
 
 
 def configure_logger():

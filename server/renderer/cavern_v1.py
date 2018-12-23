@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(package))
 import settings
 from common.point import Point
 from common.direction import Direction as Dir
-from tiles.common import exit, exit_config, smoothing, tile
+from renderer.common import exit, exit_config, smoothing, tile
 
 
 class CavernShape:
@@ -227,7 +227,7 @@ def invert_y(point: Point) -> Point:
     return point.x, 400 - point.y
 
 
-def draw_debug(dwg: svgwrite.Drawing, cavern_shape: CavernShape):
+def draw_debug(dwg: svgwrite.Drawing, cavern_shape: CavernShape, entities):
     for dir_ in cavern_shape.sides:
         for index, point in enumerate(cavern_shape.sides[dir_]):
             dwg.add(dwg.circle(
@@ -268,6 +268,14 @@ def draw_debug(dwg: svgwrite.Drawing, cavern_shape: CavernShape):
                 fill="blue",
                 text=index
             ))
+
+    for point in entities:
+        dwg.add(dwg.circle(
+            center=invert_y(point),
+            fill="green",
+            stroke="green",
+            stroke_width=15
+        ))
 
 
 def draw_walls(dwg: svgwrite.Drawing, cavern_shape: CavernShape):
@@ -343,6 +351,9 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
         exit_width=100,
     )
 
+    # Valid positions for entities (e.g. stairs)
+    entities = [Point(220, 150), Point(220, 250), Point(380, 150), Point(380, 250)]
+
     filename = 'cavern.svg'
 
     dwg = svgwrite.Drawing(
@@ -351,17 +362,17 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
         size=(tile_.width, tile_.height)
     )
     draw_walls(dwg, cavern_shape)
-    # draw_debug(dwg, cavern_shape)
+    # draw_debug(dwg, cavern_shape, entities)
     dwg.save()
 
-    return settings.TILE_OUTPUT_DIR, filename
+    return settings.TILE_OUTPUT_DIR, entities, filename
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     exit_configs = [
-        exit_config.ExitConfig(Dir.UP, 2, False),
+        exit_config.ExitConfig(Dir.UP, 4, False),
         exit_config.ExitConfig(Dir.DOWN, 1, False),
-        exit_config.ExitConfig(Dir.LEFT, 3, False),
-        exit_config.ExitConfig(Dir.RIGHT, 2, False),
+        exit_config.ExitConfig(Dir.LEFT, 3, True),
+        exit_config.ExitConfig(Dir.RIGHT, 3, True),
     ]
     render_tile(exit_configs)

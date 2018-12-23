@@ -1,92 +1,85 @@
+"""Low-level abstraction over building tiles. Cares about retries and interfacing with
+the underlying tile generating logic"""
 import random
 import logging
-from typing import Dict, List
+from typing import Dict
 
+import renderer
+from renderer.common.exit_config import ExitConfig
 import database
 from common import utils
-from common.direction import Direction
 from common.point import Point
-from tiles import tunnel_v2, cavern_v1
-from tiles.common.exit_config import ExitConfig
+from common.enum import TileType
+from common.direction import Direction
 
 logger = logging.getLogger(__name__)
 
 
-def get_or_create_tile(target: Point) -> dict:
-    existing_tile = database.get_tile(target)
-    if existing_tile:
-        return existing_tile
+class TileBuilder:
+    def __init__(self, target: Point, tile_type: TileType, prob_blockage: float):
+        self.target = target
+        self.tile_type = tile_type
+        self.prob_blockage = prob_blockage
 
-    new_tile = _create_tile(target)
-    database.insert_tile(target, new_tile)
+    def __call__(self):
+        tile = {}
+        tile['is_visited'] = False
+        tile['sides'] = self._create_sides()
 
-    return new_tile
+        exit_configs = []
+        for _, direction_str in enumerate(side for side in tile['sides']):
+            is_blocked = tile['sides'][direction_str]['is_blocked']
+            edge_position = tile['sides'][direction_str]['edge_position']
+            direction = Direction.from_string(direction_str)
+            exit_configs.append(ExitConfig(direction, edge_position, is_blocked))
 
+        render_mod = renderer.get_renderer(self.tile_type)
 
-def _create_tile(target: Point) -> dict:
-    tile = {}
-    tile['is_visited'] = False
-    tile['sides'] = _create_sides(target)
+        num_attempts = 0
+        while True:
+            try:
+                file_dir, entities, filename = render_mod.render_tile(exit_configs)
+                break
+            except ValueError:
+                # TODO: Fix root cause
+                num_attempts += 1
+                if num_attempts >= 10:
+                    raise Exception(
+                        f"Unexpected problem rendering tile: exit_configs={exit_configs}"
+                    )
 
-    exit_configs = []
-    for _, direction_str in enumerate(side for side in tile['sides']):
-        is_blocked = tile['sides'][direction_str]['is_blocked']
-        edge_position = tile['sides'][direction_str]['edge_position']
-        direction = Direction.from_string(direction_str)
-        exit_configs.append(ExitConfig(direction, edge_position, is_blocked))
+        tile['entity_candidates'] = [p.serialize() for p in entities]
+        tile['background'] = utils.load_text_file(file_dir, filename)
+        return tile
 
-    # TODO: Hand responsibility to "creator" logic
-    tile_gen = _get_tile_generator()
-    file_dir, filename = _render_tile(tile_gen, exit_configs)
-    tile['background'] = utils.load_text_file(file_dir, filename)
+    def _create_sides(self) -> Dict[Direction, dict]:
+        sides = {}
 
-    return tile
+        for direction in Direction:
+            side = {'is_blocked': self._random_is_blocked()}
 
+            adjacent_tile = database.get_tile(self.target.translate(direction))
+            if adjacent_tile:
+                opposite_dir = Direction.mirror_of(direction)
+                opposite_edge_pos = adjacent_tile['sides'][opposite_dir.value]['edge_position']
+                side['edge_position'] = opposite_edge_pos
+            else:
+                side['edge_position'] = self._random_edge_position(direction)
 
-def _render_tile(tile_gen: callable, exit_configs: List[ExitConfig]):
-    """Retries rendering on errors.
-    """
-    try:
-        return tile_gen.render_tile(exit_configs)
-    except ValueError:
-        return _render_tile(tile_gen, exit_configs)
+            sides[direction.value] = side
 
+        # Retry on 3+ blocked exits
+        num_blocked = sum([s['is_blocked'] for s in sides.values()])
+        if num_blocked >= 3:
+            return self._create_sides()
 
-def _get_tile_generator() -> callable:
-    prob_cavern = 0.3
-    return cavern_v1 if random.randint(1, 10) <= (prob_cavern * 10) else tunnel_v2
+        return sides
 
+    def _random_is_blocked(self) -> bool:
+        return random.randint(1, 10) <= (self.prob_blockage * 10)
 
-def _create_sides(target: Point) -> Dict[Direction, dict]:
-    sides = {}
-
-    for direction in Direction:
-        side = {'is_blocked': _random_is_blocked()}
-
-        adjacent_tile = database.get_tile(target.translate(direction))
-        if adjacent_tile:
-            opposite_dir = Direction.mirror_of(direction)
-            opposite_edge_pos = adjacent_tile['sides'][opposite_dir.value]['edge_position']
-            side['edge_position'] = opposite_edge_pos
+    def _random_edge_position(self, direction: Direction) -> int:
+        if direction in {Direction.UP, Direction.DOWN}:
+            return random.randint(1, 4)
         else:
-            side['edge_position'] = _random_edge_position(direction)
-
-        sides[direction.value] = side
-
-    # Retry on 3+ blocked exits
-    num_blocked = sum([s['is_blocked'] for s in sides.values()])
-    if num_blocked >= 3:
-        return _create_sides(target)
-
-    return sides
-
-
-def _random_is_blocked() -> bool:
-    return random.randint(1, 10) <= 2  # 20% probability
-
-
-def _random_edge_position(direction: Direction) -> int:
-    if direction in {Direction.UP, Direction.DOWN}:
-        return random.randint(1, 4)
-    else:
-        return random.randint(1, 3)
+            return random.randint(1, 3)
