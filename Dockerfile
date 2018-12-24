@@ -6,4 +6,4 @@ WORKDIR /usr/src/creepy-server/server
 ADD requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-CMD python server.py
+CMD python start_server.py

@@ -6,9 +6,9 @@ from marshmallow import fields, Schema, ValidationError, INCLUDE
 from flask_socketio import SocketIO, emit
 
 from common.point import Point
+from common.enum import ClientAction
 from web import marshal
 from game import actions, errors
-from game.enum import Action
 
 
 logger = logging.getLogger(__name__)
@@ -25,19 +25,19 @@ class TileSchema(Schema):
     position = fields.Nested(PositionSchema)  # Used when returning list of tiles
 
 
-class ActionSchema(Schema):
+class ClientActionSchema(Schema):
     class Meta:
         unknown = INCLUDE
 
-    name = fields.String(required=True, validate=OneOf(Action.values()))
+    name = fields.String(required=True, validate=OneOf(ClientAction.values()))
 
 
-class ActionNavigateSchema(ActionSchema):
+class ActionNavigateSchema(ClientActionSchema):
     target_pos = fields.Nested(PositionSchema, required=True)
 
 
 class JsonSchema(Schema):
-    action = fields.Nested(ActionSchema, required=True)
+    action = fields.Nested(ClientActionSchema, required=True)
 
 
 def configure_handlers(socketio: SocketIO):
@@ -73,9 +73,9 @@ def configure_handlers(socketio: SocketIO):
                 }
             )
 
-        if action_name == Action.NAVIGATE.value:
+        if action_name == ClientAction.NAVIGATE.value:
             return _handle_navigate(payload, target_pos)
-        if action_name == Action.REFRESH_ALL.value:
+        if action_name == ClientAction.REFRESH_ALL.value:
             return _handle_refresh_all(payload)
 
     def _handle_navigate(payload: dict, target_pos: Point):

@@ -6,8 +6,8 @@ from typing import Dict
 
 import renderer
 from renderer.common.exit_config import ExitConfig
-import database
-from common import utils
+from game import database
+from common import file_utils
 from common.point import Point
 from common.enum import TileType
 from common.direction import Direction
@@ -49,7 +49,7 @@ class TileBuilder:
                     )
 
         tile['entity_candidates'] = [p.serialize() for p in entities]
-        tile['background'] = utils.load_text_file(file_dir, filename)
+        tile['background'] = file_utils.load_text_file(file_dir, filename)
         return tile
 
     def _create_sides(self) -> Dict[Direction, dict]:

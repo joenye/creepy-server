@@ -4,10 +4,10 @@ High-level abstraction over tile generation. Cares about "balancing" the game.
 """
 import random
 
-import database
 from common.point import Point
 from common.enum import TileType
 from game import builder
+from game import database
 
 
 def get_or_create_tile(target: Point) -> dict:
@@ -19,7 +19,7 @@ def get_or_create_tile(target: Point) -> dict:
 
 
 def _create_tile(target):
-    new_tile = builder.TileBuilder(target, _get_tile_type(), _get_prob_blockage())()
+    new_tile = builder.TileBuilder(target, _tile_type(), _prob_blockage())()
 
     # TODO: Entity / card logic goes here
 
@@ -27,10 +27,14 @@ def _create_tile(target):
     return new_tile
 
 
-def _get_tile_type() -> callable:
+def _tile_type() -> TileType:
     prob_cavern = 0.3
     return TileType.CAVERN if random.randint(1, 10) <= (prob_cavern * 10) else TileType.TUNNEL
 
 
-def _get_prob_blockage() -> bool:
+def _prob_blockage() -> float:
     return 0.2
+
+
+def _prob_stairs() -> float:
+    return 0.05

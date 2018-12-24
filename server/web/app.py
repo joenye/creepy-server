@@ -24,7 +24,7 @@ def create_app():
 
 
 def _configure_settings(app):
-    import settings
+    from common import settings
     app.config.from_object(settings)
     return app
 

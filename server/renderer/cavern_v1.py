@@ -8,7 +8,7 @@ import svgwrite
 package = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, os.path.abspath(package))
 
-import settings
+from common import settings
 from common.point import Point
 from common.direction import Direction as Dir
 from renderer.common import exit, exit_config, smoothing, tile

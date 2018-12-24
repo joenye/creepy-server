@@ -1,11 +1,11 @@
 """Available client actions"""
 import logging
 
-import database
 from common.point import Point
+from common.enum import ClientAction
 from common.direction import Direction
-from game import creator, errors
-from game.enum import Action
+from game import database
+from game import creator, errors as game_errors
 
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ def get_available_actions():
     actions = []
     for side, vals in current_tile['sides'].items():
         if not vals['is_blocked']:
-            actions.append(Action.NAVIGATE)
+            actions.append(ClientAction.NAVIGATE)
             break
 
     return actions
@@ -55,26 +55,26 @@ def navigate(target_pos: Point):
 
     # Validate this action is possible
     available_actions = get_available_actions()
-    if Action.NAVIGATE not in available_actions:
-        raise errors.InvalidAction("You can't navigate from where you are")
+    if ClientAction.NAVIGATE not in available_actions:
+        raise game_errors.InvalidAction("You can't navigate from where you are")
 
     if current_pos == target_pos:
-        raise errors.InvalidAction("You're already on that tile")
+        raise game_errors.InvalidAction("You're already on that tile")
 
     # Validate can reach the tile
     target_dir = get_target_dir(current_pos, target_pos)
     if not target_dir:
-        raise errors.InvalidAction('That tile is too far away')
+        raise game_errors.InvalidAction('That tile is too far away')
 
     # Validate current tile is not blocked on this side
     current_tile = creator.get_or_create_tile(current_pos)
     if current_tile['sides'][target_dir.value]['is_blocked']:
-        raise errors.InvalidAction('The way is shut from this side')
+        raise game_errors.InvalidAction('The way is shut from this side')
 
     # Validate target tile is not blocked on the other side
     target_tile = creator.get_or_create_tile(target_pos)
     if target_tile['sides'][Direction.mirror_of(target_dir).value]['is_blocked']:
-        raise errors.InvalidAction('The way is shut from the other side')
+        raise game_errors.InvalidAction('The way is shut from the other side')
 
     # Fetch (or create) tile and update position
     tile = creator.get_or_create_tile(target_pos)

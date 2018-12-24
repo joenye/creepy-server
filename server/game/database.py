@@ -2,7 +2,7 @@ import logging
 import pymongo
 import collections
 
-import settings
+from common import settings
 from common.point import Point
 
 logger = logging.getLogger(__name__)
