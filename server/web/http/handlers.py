@@ -5,7 +5,7 @@ import flask
 from marshmallow import fields, Schema
 
 from web import marshal
-from game import builder, dm
+from game import builder, actions
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class NavigateSchema(Schema):
 
 @http_api.route('/current')
 def current():
-    current_pos = dm.get_or_update_current_position()
+    current_pos = actions.get_or_update_current_position()
 
     tile = builder.get_or_create_tile(current_pos)
     background = tile['background']
@@ -35,6 +35,6 @@ def current():
     resp = {
         'background': background,
         'current_position': current_pos,
-        'available_actions': dm.get_available_actions(),
+        'available_actions': actions.get_available_actions(),
     }
     return marshal.marshal(resp, schema=NavigateSchema()), 200

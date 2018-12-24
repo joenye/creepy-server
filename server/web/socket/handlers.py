@@ -7,7 +7,7 @@ from flask_socketio import SocketIO, emit
 
 from common.point import Point
 from web import marshal
-from game import dm, errors
+from game import actions, errors
 from game.enum import Action
 
 
@@ -91,7 +91,7 @@ def configure_handlers(socketio: SocketIO):
             )
 
         try:
-            tile = dm.navigate(target_pos)
+            tile = actions.navigate(target_pos)
         except errors.InvalidAction as err:
             return _emit_response(
                 status='NAVIGATE_ERROR',
@@ -110,8 +110,8 @@ def configure_handlers(socketio: SocketIO):
         )
 
     def _handle_refresh_all(payload: dict):
-        current_pos = dm.get_or_update_current_position()
-        all_tiles = dm.get_all_visited_tiles()
+        current_pos = actions.get_or_update_current_position()
+        all_tiles = actions.get_all_visited_tiles()
 
         return _emit_response(
             status='REFRESH_ALL_SUCCESS',

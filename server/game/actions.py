@@ -1,4 +1,4 @@
-"""Dungeon Master module provides top-level game actions"""
+"""Available client actions"""
 import logging
 
 import database
