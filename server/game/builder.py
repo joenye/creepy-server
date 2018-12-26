@@ -1,5 +1,8 @@
-"""Low-level abstraction over building tiles. Cares about retries and interfacing with
-the underlying tile generating logic"""
+"""
+Low-level abstraction over building tiles. Cares about retries and interfacing with
+the underlying tile generating logic.
+
+"""
 import random
 import logging
 from typing import Dict
@@ -47,6 +50,7 @@ class TileBuilder:
                     raise Exception(
                         f"Unexpected problem rendering tile: exit_configs={exit_configs}"
                     )
+                logger.warn("Failed to render tile: exit_configs={exit_configs}")
 
         tile['entity_candidates'] = [p.serialize() for p in entities]
         tile['background'] = file_utils.load_text_file(file_dir, filename)

@@ -6,7 +6,7 @@ from marshmallow import fields, Schema, ValidationError, INCLUDE
 from flask_socketio import SocketIO, emit
 
 from common.point import Point
-from common.enum import ClientAction
+from common.enum import ClientAction, EntityType
 from web import marshal
 from game import actions, errors
 
@@ -23,6 +23,10 @@ class PositionSchema(Schema):
 class TileSchema(Schema):
     background = fields.String(required=True)
     position = fields.Nested(PositionSchema)  # Used when returning list of tiles
+    entities = fields.Dict(
+        keys=fields.String(),  # Serialized position
+        values=fields.String(validate=OneOf(EntityType.values()))
+    )
 
 
 class ClientActionSchema(Schema):

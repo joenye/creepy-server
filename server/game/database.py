@@ -47,6 +47,7 @@ def get_all_visited_tiles():
     floors = doc['session']['floors']
     for floor, val in floors.items():
         for pos, tile in val['tiles'].items():
+            logger.warn(tile)
             if not tile['is_visited']:
                 continue
 

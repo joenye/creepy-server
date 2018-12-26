@@ -386,7 +386,6 @@ class ElbowMaker:
                     break
 
                 nex = elbow_cpy[index + 1]
-                print(elbow)
                 points_between = self._calculate_points_between(current, nex)
                 elbow = elbow[:index + offset] + points_between + elbow[index + offset:]
 
