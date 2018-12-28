@@ -36,13 +36,13 @@ def _add_entities(tile) -> dict:
     tile['entities'] = {}
     candidates = tile['entity_candidates'][:]
     random.shuffle(candidates)
-    for pos in candidates:
+    for pos in [Point.deserialize(c) for c in candidates]:
         unused = [e for e in EntityType.all() if e not in used]
         random.shuffle(unused)
         for entity in unused:
             if random.uniform(0, 1) > _entity_probs[entity]:
                 continue
-            tile['entities'][pos] = entity.value
+            tile['entities'][entity.value] = {'pos': pos}
             used.add(entity)
             break
 
@@ -54,9 +54,9 @@ def _add_cards(tile) -> dict:
 
 
 _entity_probs = {
-    EntityType.STAIRS_UP: 0.05,
+    EntityType.STAIRS_UP: 1,
     EntityType.STAIRS_UP_SECRET: 0,
-    EntityType.STAIRS_DOWN: 0.05,
+    EntityType.STAIRS_DOWN: 1,
     EntityType.STAIRS_DOWN_SECRET: 0,
 }
 

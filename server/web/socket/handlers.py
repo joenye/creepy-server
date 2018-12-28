@@ -20,12 +20,16 @@ class PositionSchema(Schema):
     z = fields.Integer(required=True)
 
 
+class EntitySchema(Schema):
+    pos = fields.Nested(PositionSchema, required=True)
+
+
 class TileSchema(Schema):
     background = fields.String(required=True)
-    position = fields.Nested(PositionSchema)  # Used when returning list of tiles
+    pos = fields.Nested(PositionSchema, attribute='position')
     entities = fields.Dict(
-        keys=fields.String(),  # Serialized position
-        values=fields.String(validate=OneOf(EntityType.values()))
+        keys=fields.String(validate=OneOf(EntityType.values())),
+        values=fields.Nested(EntitySchema, required=True)
     )
 
 

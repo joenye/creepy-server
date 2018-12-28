@@ -1,8 +1,7 @@
-import json
 from common.direction import Direction
 
 
-class Point(json.JSONEncoder):
+class Point:
     """Container for coordinates, as well as helper methods.
 
     :param x: x-coordinate.
