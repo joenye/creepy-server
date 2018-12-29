@@ -7,6 +7,9 @@ class Direction(enum.Enum):
     DOWN = 'down'
     LEFT = 'left'
 
+    ABOVE = 'above'
+    BELOW = 'below'
+
     @classmethod
     def from_string(cls, value: str):
         if value == cls.UP.value:
@@ -17,6 +20,10 @@ class Direction(enum.Enum):
             return Direction.DOWN
         if value == cls.LEFT.value:
             return Direction.LEFT
+        if value == cls.ABOVE.value:
+            return Direction.ABOVE
+        if value == cls.BELOW.value:
+            return Direction.BELOW
 
     @classmethod
     def to_nesw(cls, value: str):
