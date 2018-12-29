@@ -23,6 +23,10 @@ class Point:
             return Point(self.x, self.y - amount, self.z)
         if direction == Direction.LEFT:
             return Point(self.x - amount, self.y, self.z)
+        if direction == Direction.ABOVE:
+            return Point(self.x, self.y, self.z - amount)
+        if direction == Direction.BELOW:
+            return Point(self.x, self.y, self.z + amount)
         else:
             raise ValueError("Invalid direction: direction={direction}")
 
@@ -40,6 +44,10 @@ class Point:
             return Point(0, -1)
         if direction == Direction.LEFT:
             return Point(-1, 0)
+        if direction == Direction.ABOVE:
+            return Point(0, 0, -1)
+        if direction == Direction.BELOW:
+            return Point(0, 0, 1)
 
     def copy(self):
         return type(self)(x=self.x, y=self.y)
@@ -76,7 +84,7 @@ class Point:
         raise TypeError(f"multiplication between Point and {type(p2)} is not supported")
 
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
+        return self.x == other.x and self.y == other.y and self.z == other.z
 
     def __repr__(self):
         if self.z is not None:
