@@ -66,15 +66,15 @@ def navigate(target_pos: Point):
     if not target_dir:
         raise game_errors.InvalidAction('That tile is too far away')
 
-    # Validate current tile is not blocked on this side
     current_tile = creator.get_or_create_tile(current_pos)
-    if current_tile['sides'][target_dir.value]['is_blocked']:
-        raise game_errors.InvalidAction('The way is shut from this side')
-
-    # Validate target tile is not blocked on the other side
-    target_tile = creator.get_or_create_tile(target_pos)
-    if target_tile['sides'][Direction.mirror_of(target_dir).value]['is_blocked']:
-        raise game_errors.InvalidAction('The way is shut from the other side')
+    if target_dir in Direction.all_nesw():
+        # Validate current tile is not blocked on this side
+        if current_tile['sides'][target_dir.value]['is_blocked']:
+            raise game_errors.InvalidAction('The way is shut from this side')
+        # Validate target tile is not blocked on the other side
+        target_tile = creator.get_or_create_tile(target_pos)
+        if target_tile['sides'][Direction.mirror_of(target_dir).value]['is_blocked']:
+            raise game_errors.InvalidAction('The way is shut from the other side')
 
     # Fetch (or create) tile and update position
     tile = creator.get_or_create_tile(target_pos)

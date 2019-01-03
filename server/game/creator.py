@@ -54,9 +54,9 @@ def _add_cards(tile) -> dict:
 
 
 _entity_probs = {
-    EntityType.STAIRS_UP: 1,
+    EntityType.STAIRS_UP: 0.025,
     EntityType.STAIRS_UP_SECRET: 0,
-    EntityType.STAIRS_DOWN: 1,
+    EntityType.STAIRS_DOWN: 0.025,
     EntityType.STAIRS_DOWN_SECRET: 0,
 }
 

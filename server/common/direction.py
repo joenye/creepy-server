@@ -76,5 +76,9 @@ class Direction(enum.Enum):
         return [d for d in cls]
 
     @classmethod
+    def all_nesw(cls):
+        return [cls.UP, cls.RIGHT, cls.DOWN, cls.LEFT]
+
+    @classmethod
     def values(cls):
         return [d.value for d in cls]

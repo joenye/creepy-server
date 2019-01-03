@@ -213,7 +213,7 @@ class Path:
 
     def _get_all_adjacent(self, current: Point) -> typing.List[Point]:
         candidates = []
-        for direction in Dir:
+        for direction in Dir.all_nesw():
             candidates.append(current.translate(direction))
 
         return candidates
@@ -232,7 +232,7 @@ class ElbowMaker:
         connected: typing.List = []
         stubs: typing.List = []
 
-        for dir_ in Dir:
+        for dir_ in Dir.all_nesw():
             if self.path.exits[dir_].is_blocked:
                 stubs.append(self.elbows[dir_])
             else:
@@ -552,6 +552,8 @@ def draw_debug(dwg: svgwrite.Drawing, path: Path, grid: Grid, elbows: ElbowMaker
 
 def draw_walls(dwg: svgwrite.Drawing, elbows: ElbowMaker):
     """Draw the walls around the paths"""
+    # TODO: Use for e.g. thorny floor
+    # smooth_line_calc = smoothing.smooth_line(smoothing=0.6, flip_y_height=400)
     smooth_line_calc = smoothing.smooth_line(smoothing=0.2, flip_y_height=400)
     connected, stubs = elbows.connected_elbows()
     dwg.add(dwg.path(

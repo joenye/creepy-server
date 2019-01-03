@@ -46,7 +46,7 @@ class CavernShape:
     def _calculate_offsets(self) -> typing.Dict[Dir, Point]:
         offsets = {}
 
-        for dir_ in Dir:
+        for dir_ in Dir.all_nesw():
             amount = random.randint(20, 40)
             exit_ = self.exits[dir_]
             if exit_.is_blocked:
@@ -200,7 +200,7 @@ class CavernShape:
         # offset for that side.
         stubs = {}
 
-        for dir_ in Dir:
+        for dir_ in Dir.all_nesw():
             offset = self.offsets[dir_]
             if offset == Point(0, 0):
                 continue
@@ -250,7 +250,7 @@ def draw_debug(dwg: svgwrite.Drawing, cavern_shape: CavernShape, entities):
             stroke_width=12
         ))
 
-    for dir_ in Dir:
+    for dir_ in Dir.all_nesw():
         if not cavern_shape.stubs.get(dir_):
             continue
 
@@ -288,7 +288,7 @@ def draw_walls(dwg: svgwrite.Drawing, cavern_shape: CavernShape):
         stroke_width=6
     ))
 
-    for dir_ in Dir:
+    for dir_ in Dir.all_nesw():
         if not cavern_shape.stubs.get(dir_):
             continue
 

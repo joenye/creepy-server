@@ -59,7 +59,7 @@ class TileBuilder:
     def _create_sides(self) -> Dict[Direction, dict]:
         sides = {}
 
-        for direction in Direction:
+        for direction in Direction.all_nesw():
             side = {'is_blocked': self._random_is_blocked()}
 
             adjacent_tile = database.get_tile(self.target.translate(direction))
