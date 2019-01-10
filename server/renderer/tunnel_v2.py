@@ -4,6 +4,7 @@ import random
 import typing
 
 import svgwrite
+from scour import scour
 
 package = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, os.path.abspath(package))
@@ -599,6 +600,14 @@ def load_configs(grid: Grid, exit_configs: typing.List[exit_config.ExitConfig]
     return exits
 
 
+def scour_tile(name) -> str:
+    input_path = settings.TILE_OUTPUT_DIR + name + '.svg'
+    output_path = settings.TILE_OUTPUT_DIR + name + '_scoured.svg'
+    options = scour.parse_args(args=[input_path, output_path])
+    scour.start(options, *scour.getInOut(options))
+    return name + '_scoured.svg'
+
+
 def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
     tile_ = tile.Tile(width=600, height=400)
     grid = Grid(tile=tile_)
@@ -611,16 +620,17 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
     # Valid positions for entities (e.g. stairs)
     entities = [p * 100 for p in path.filled if (p.x > 0 and p.x < 6 and p.y > 0 and p.y < 4)]
 
-    filename = 'tunnel.svg'
-
+    name = 'tunnel'
     dwg = svgwrite.Drawing(
         profile='tiny',
-        filename=settings.TILE_OUTPUT_DIR + filename,
+        filename=settings.TILE_OUTPUT_DIR + name + '.svg',
         size=(tile_.width, tile_.height)
     )
     draw_walls(dwg, elbows)
     # draw_debug(dwg, path, grid, elbows, entities)
     dwg.save()
+
+    filename = scour_tile(name)
 
     return settings.TILE_OUTPUT_DIR, entities, filename
 

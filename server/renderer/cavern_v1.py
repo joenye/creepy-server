@@ -4,6 +4,7 @@ import random
 import typing
 
 import svgwrite
+from scour import scour
 
 package = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, os.path.abspath(package))
@@ -336,6 +337,14 @@ def load_configs(tile: tile.Tile, exit_configs: typing.List[exit_config.ExitConf
     return exits
 
 
+def scour_tile(name):
+    input_path = settings.TILE_OUTPUT_DIR + name + '.svg'
+    output_path = settings.TILE_OUTPUT_DIR + name + '_scoured.svg'
+    options = scour.parse_args(args=[input_path, output_path])
+    scour.start(options, *scour.getInOut(options))
+    return name + '_scoured.svg'
+
+
 def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
     tile_ = tile.Tile(width=600, height=400)
 
@@ -345,7 +354,7 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
         origin=Point(margin, margin),
         width=tile_.width - (2 * margin),
         height=tile_.height - (2 * margin),
-        spacing=45,
+        spacing=45,  # TODO: 25 for deeper floors
         wobbliness=25,
         exits=exits,
         exit_width=100,
@@ -354,16 +363,17 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
     # Valid positions for entities (e.g. stairs)
     entities = [Point(220, 150), Point(220, 250), Point(380, 150), Point(380, 250)]
 
-    filename = 'cavern.svg'
-
+    name = 'cavern'
     dwg = svgwrite.Drawing(
         profile='tiny',
-        filename=settings.TILE_OUTPUT_DIR + filename,
+        filename=settings.TILE_OUTPUT_DIR + name + '.svg',
         size=(tile_.width, tile_.height)
     )
     draw_walls(dwg, cavern_shape)
     # draw_debug(dwg, cavern_shape, entities)
     dwg.save()
+
+    filename = scour_tile(name)
 
     return settings.TILE_OUTPUT_DIR, entities, filename
 
