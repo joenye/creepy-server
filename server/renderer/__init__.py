@@ -1,10 +1,10 @@
 from common.enum import TileType
-from renderer import tunnel_v2, cavern_v1
+from renderer import tunnel, cavern
 
 
 def get_renderer(tile_type: TileType):
     if tile_type == TileType.TUNNEL:
-        return tunnel_v2
+        return tunnel
     if tile_type == TileType.CAVERN:
-        return cavern_v1
+        return cavern
     raise ValueError(f"Invalid tile_type: {tile_type}")

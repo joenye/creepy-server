@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(package))
 
 from common import settings
 from common.point import Point
-from common.direction import Direction as Dir
+from common.enum import Direction as Dir
 from renderer.common import exit, exit_config, smoothing, tile
 
 
@@ -363,6 +363,14 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
     # Valid positions for entities (e.g. stairs)
     entities = [Point(220, 150), Point(220, 250), Point(380, 150), Point(380, 250)]
 
+    exit_pos = [
+        Point(
+            e.point.x * 100 + (0 if e.point.y else 50),
+            e.point.y * 100 + (0 if e.point.x else 50)
+        )
+        for e in exits.values()
+    ]
+
     name = 'cavern'
     dwg = svgwrite.Drawing(
         profile='tiny',
@@ -375,7 +383,7 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
 
     filename = scour_tile(name)
 
-    return settings.TILE_OUTPUT_DIR, entities, filename
+    return settings.TILE_OUTPUT_DIR, entities, exits_pos, filename
 
 
 if __name__ == '__main__':

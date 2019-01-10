@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(package))
 
 from common import settings
 from common.point import Point
-from common.direction import Direction as Dir
+from common.enum import Direction as Dir
 from renderer.common import exit, exit_config, rectangle, smoothing, tile
 
 
@@ -617,8 +617,16 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
 
     elbows = ElbowMaker(grid, path)
 
-    # Valid positions for entities (e.g. stairs)
+    # Valid positions for entities, e.g. for stairs
     entities = [p * 100 for p in path.filled if (p.x > 0 and p.x < 6 and p.y > 0 and p.y < 4)]
+
+    exit_pos = [
+        Point(
+            e.point.x * 100 + (0 if e.point.y else 50),
+            e.point.y * 100 + (0 if e.point.x else 50)
+        )
+        for e in exits.values()
+    ]
 
     name = 'tunnel'
     dwg = svgwrite.Drawing(
@@ -632,7 +640,7 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
 
     filename = scour_tile(name)
 
-    return settings.TILE_OUTPUT_DIR, entities, filename
+    return settings.TILE_OUTPUT_DIR, entities, exits_pos, filename
 
 
 if __name__ == '__main__':
