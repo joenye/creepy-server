@@ -12,8 +12,7 @@ from renderer.common.exit_config import ExitConfig
 from game import database
 from common import file_utils
 from common.point import Point
-from common.enum import TileType
-from common.direction import Direction
+from common.enum import TileType, Direction
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ class TileBuilder:
         num_attempts = 0
         while True:
             try:
-                file_dir, entities, filename = render_mod.render_tile(exit_configs)
+                resp = render_mod.render_tile(exit_configs)
                 break
             except ValueError:
                 # TODO: Fix root cause
@@ -52,8 +51,11 @@ class TileBuilder:
                     )
                 logger.warn("Failed to render tile: exit_configs={exit_configs}")
 
+        file_dir, entities, exits_pos, filename = resp
         tile['entity_candidates'] = [p.serialize() for p in entities]
+        tile['exits_pos'] = {d.value: e for d, e in exits_pos.items()}
         tile['background'] = file_utils.load_text_file(file_dir, filename)
+
         return tile
 
     def _create_sides(self) -> Dict[Direction, dict]:

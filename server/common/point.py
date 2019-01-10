@@ -1,4 +1,4 @@
-from common.direction import Direction
+from common.enum import Direction
 
 
 class Point:

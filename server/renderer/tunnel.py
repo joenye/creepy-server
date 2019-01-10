@@ -619,14 +619,7 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
 
     # Valid positions for entities, e.g. for stairs
     entities = [p * 100 for p in path.filled if (p.x > 0 and p.x < 6 and p.y > 0 and p.y < 4)]
-
-    exit_pos = [
-        Point(
-            e.point.x * 100 + (0 if e.point.y else 50),
-            e.point.y * 100 + (0 if e.point.x else 50)
-        )
-        for e in exits.values()
-    ]
+    exits_pos = {d: Point(e.point.x * 100, e.point.y * 100) for d, e in exits.items()}
 
     name = 'tunnel'
     dwg = svgwrite.Drawing(

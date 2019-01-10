@@ -27,7 +27,7 @@ def _create_tile(target) -> dict:
     new_tile = _add_entities(new_tile)
     new_tile = _add_cards(new_tile)
 
-    database.insert_tile(target, new_tile)
+    database.insert_or_update_tile(target, new_tile)
     return new_tile
 
 

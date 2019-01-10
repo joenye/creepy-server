@@ -42,7 +42,6 @@ def get_all_visited_tiles():
         f"session.floors": {'$exists': True}
     })
     if not doc:
-        logger.warn("Derrrrrrrrrrrrrrrrrrrrrrp")
         return None
 
     floor_to_tiles = collections.defaultdict(list)
@@ -76,7 +75,7 @@ def get_tile(point: Point):
     return _deserialize_pos(doc['session']['floors'][str_floor]['tiles'][str_point])
 
 
-def insert_tile(point: Point, tile: dict):
+def insert_or_update_tile(point: Point, tile: dict):
     db = _client['creepy']
     collection = db['tiles']
 
@@ -108,7 +107,7 @@ def _deserialize_pos(obj: dict) -> dict:
         for k, v in d.items():
             if isinstance(v, dict):
                 d[k] = update(d.get(k, {}))
-            elif isinstance(v, str) and 'pos' in str(k):
+            elif isinstance(v, str) and ',' in str(v):
                 d[k] = Point.deserialize(d[k])
         return d
 

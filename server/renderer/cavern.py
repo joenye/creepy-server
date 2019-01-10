@@ -362,14 +362,10 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
 
     # Valid positions for entities (e.g. stairs)
     entities = [Point(220, 150), Point(220, 250), Point(380, 150), Point(380, 250)]
-
-    exit_pos = [
-        Point(
-            e.point.x * 100 + (0 if e.point.y else 50),
-            e.point.y * 100 + (0 if e.point.x else 50)
-        )
-        for e in exits.values()
-    ]
+    exits_pos = {
+        d: Point(int(round(e.point.x, -2)), int(round(e.point.y, -2)))
+        for d, e in exits.items()
+    }
 
     name = 'cavern'
     dwg = svgwrite.Drawing(

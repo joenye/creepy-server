@@ -3,7 +3,7 @@ import logging
 
 from common.point import Point
 from common.enum import ClientAction
-from common.direction import Direction
+from common.enum import Direction
 from game import database
 from game import creator, errors as game_errors
 
@@ -67,24 +67,24 @@ def navigate(target_pos: Point):
         raise game_errors.InvalidAction('That tile is too far away')
 
     current_tile = creator.get_or_create_tile(current_pos)
+    target_tile = creator.get_or_create_tile(target_pos)
     if target_dir in Direction.all_nesw():
         # Validate current tile is not blocked on this side
         if current_tile['sides'][target_dir.value]['is_blocked']:
             raise game_errors.InvalidAction('The way is shut from this side')
         # Validate target tile is not blocked on the other side
-        target_tile = creator.get_or_create_tile(target_pos)
         if target_tile['sides'][Direction.mirror_of(target_dir).value]['is_blocked']:
             raise game_errors.InvalidAction('The way is shut from the other side')
-
-    # Fetch (or create) tile and update position
-    tile = creator.get_or_create_tile(target_pos)
+    else:
+        # TODO: Validation when going up or down
+        pass
 
     # Mark tile as visited (prevents user from refreshing and seeing adjacent tiles
     # which exist in the database but they have not accessed)
-    tile['is_visited'] = True
-    database.insert_tile(target_pos, tile)
+    target_tile['is_visited'] = True
+    database.insert_or_update_tile(target_pos, target_tile)
 
     database.update_current_position(target_pos)
 
     logger.info(f"Successfully navigated: target_pos={target_pos}")
-    return tile
+    return target_tile
