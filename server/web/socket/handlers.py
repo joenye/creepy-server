@@ -53,6 +53,11 @@ class JsonSchema(Schema):
 
 
 def configure_handlers(socketio: SocketIO):
+    @socketio.on_error()
+    def error_handler(e):
+        # Log all errors
+        logger.error(e)
+
     @socketio.on('connect')
     def handle_connect():
         logger.info('Client connected')
