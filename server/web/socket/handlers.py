@@ -130,6 +130,11 @@ def configure_handlers(socketio: SocketIO):
         current_pos = actions.get_or_update_current_position()
         all_tiles = actions.get_all_visited_tiles()
 
+        if not all_tiles:
+            # Generate starting tile
+            actions.create_initial_tile()
+            all_tiles = actions.get_all_visited_tiles()
+
         return _emit_response(
             status='REFRESH_ALL_SUCCESS',
             message={

@@ -46,6 +46,20 @@ def get_all_visited_tiles():
     return database.get_all_visited_tiles()
 
 
+def create_initial_tile():
+    current_pos = get_or_update_current_position()
+    logger.info(
+        "Received request to create initial tile: "
+        f"current_pos={current_pos}"
+    )
+    tile = creator.get_or_create_tile(current_pos)
+    tile['is_visited'] = True
+    database.insert_or_update_tile(current_pos, tile)
+    database.update_current_position(current_pos)
+    logger.info(f"Successfully created initial tile: current_pos={current_pos}")
+    return tile
+
+
 def navigate(target_pos: Point):
     current_pos = get_or_update_current_position()
     logger.info(

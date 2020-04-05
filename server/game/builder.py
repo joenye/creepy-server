@@ -3,6 +3,7 @@ Low-level abstraction over building tiles. Cares about retries and interfacing w
 the underlying tile generating logic.
 
 """
+import sys
 import random
 import logging
 from typing import Dict
@@ -36,6 +37,7 @@ class TileBuilder:
             exit_configs.append(ExitConfig(direction, edge_position, is_blocked))
 
         render_mod = renderer.get_renderer(self.tile_type)
+        logger.info(render_mod)
 
         num_attempts = 0
         while True:
