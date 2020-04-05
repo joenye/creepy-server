@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+from pathlib import Path
 
 from common import file_utils
 
@@ -14,6 +15,8 @@ MONGO_PORT = int(os.getenv('MONGO_PORT', 27017))
 MONGO_DEFAULT_DB = os.getenv('MONGO_DEFAULT_DB', 'db')
 
 TILE_OUTPUT_DIR = os.getenv('TILE_OUTPUT_DIR', file_utils.get_data_path('renderer/output'))
+# Ensure exists
+Path(TILE_OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
 
 def configure_logger():
