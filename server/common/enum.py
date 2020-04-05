@@ -2,15 +2,15 @@ from enum import Enum
 
 
 class ClientAction(Enum):
-    NAVIGATE = 'navigate'
+    NAVIGATE = "navigate"
 
-    REFRESH_ALL = 'refresh_all'
-    REFRESH_CURRENT = 'refresh_current'
-    REFRESH_FLOOR = 'refresh_floor'
+    REFRESH_ALL = "refresh_all"
+    REFRESH_CURRENT = "refresh_current"
+    REFRESH_FLOOR = "refresh_floor"
 
     @classmethod
     def all(cls):
-        return [a for a in cls]
+        return list(cls)
 
     @classmethod
     def values(cls):
@@ -18,12 +18,12 @@ class ClientAction(Enum):
 
 
 class TileType(Enum):
-    TUNNEL = 'tunnel'
-    CAVERN = 'cavern'
+    TUNNEL = "tunnel"
+    CAVERN = "cavern"
 
     @classmethod
     def all(cls):
-        return [t for t in cls]
+        return list(cls)
 
     @classmethod
     def values(cls):
@@ -31,14 +31,14 @@ class TileType(Enum):
 
 
 class EntityType(Enum):
-    STAIRS_UP = 'stairs_up'
-    STAIRS_UP_SECRET = 'stairs_up_secret'
-    STAIRS_DOWN = 'stairs_down'
-    STAIRS_DOWN_SECRET = 'stairs_down_secret'
+    STAIRS_UP = "stairs_up"
+    STAIRS_UP_SECRET = "stairs_up_secret"
+    STAIRS_DOWN = "stairs_down"
+    STAIRS_DOWN_SECRET = "stairs_down_secret"
 
     @classmethod
     def all(cls):
-        return [t for t in cls]
+        return list(cls)
 
     @classmethod
     def values(cls):
@@ -46,13 +46,13 @@ class EntityType(Enum):
 
 
 class Direction(Enum):
-    UP = 'up'
-    RIGHT = 'right'
-    DOWN = 'down'
-    LEFT = 'left'
+    UP = "up"
+    RIGHT = "right"
+    DOWN = "down"
+    LEFT = "left"
 
-    ABOVE = 'above'
-    BELOW = 'below'
+    ABOVE = "above"
+    BELOW = "below"
 
     @classmethod
     def from_string(cls, value: str):
@@ -68,19 +68,20 @@ class Direction(Enum):
             return Direction.ABOVE
         if value == cls.BELOW.value:
             return Direction.BELOW
+        raise ValueError(f"{value} is not a supported {cls.__name__}")
 
     @classmethod
     def to_nesw(cls, value: str):
         if value == cls.UP.value:
-            return 'north'
+            return "north"
         if value == cls.RIGHT.value:
-            return 'east'
+            return "east"
         if value == cls.DOWN.value:
-            return 'south'
+            return "south"
         if value == cls.LEFT.value:
-            return 'west'
+            return "west"
 
-        raise ValueError(f"{value} is not a valid {cls.__name__}")
+        raise ValueError(f"{value} is not a supported {cls.__name__}")
 
     @classmethod
     def mirror_of(cls, direction):
@@ -92,6 +93,7 @@ class Direction(Enum):
             return cls.UP
         if direction == cls.LEFT:
             return cls.RIGHT
+        raise ValueError(f"{direction} is not a supported {cls.__name__}")
 
     @classmethod
     def clockwise_of(cls, direction):
@@ -103,6 +105,7 @@ class Direction(Enum):
             return cls.LEFT
         if direction == cls.LEFT:
             return cls.UP
+        raise ValueError(f"{direction} is not a supported {cls.__name__}")
 
     @classmethod
     def anticlockwise_of(cls, direction):
@@ -114,10 +117,11 @@ class Direction(Enum):
             return cls.RIGHT
         if direction == cls.LEFT:
             return cls.DOWN
+        raise ValueError(f"{direction} is not a supported {cls.__name__}")
 
     @classmethod
     def all(cls):
-        return [d for d in cls]
+        return list(cls)
 
     @classmethod
     def all_nesw(cls):

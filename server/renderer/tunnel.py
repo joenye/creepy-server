@@ -1,17 +1,14 @@
-import os
-import sys
 import random
 import typing
 
 import svgwrite
 from scour import scour
 
-package = os.path.join(os.path.dirname(__file__), '..')
-sys.path.insert(0, os.path.abspath(package))
-
 from common import settings
 from common.point import Point
 from common.enum import Direction as Dir
+
+# pylint: disable=redefined-builtin,redefined-outer-name
 from renderer.common import exit, exit_config, rectangle, smoothing, tile
 
 
@@ -20,8 +17,10 @@ class Grid:
     `Tile` coordinates, with their `Grid` position is expressed in `Grid` coordinates.
 
     """
+
     elements: typing.List[typing.List[Point]]
 
+    # pylint: disable=W0621
     def __init__(self, tile: tile.Tile) -> None:
         self.tile = tile
         self._generate()
@@ -33,11 +32,12 @@ class Grid:
         return [rects[row_y] for rects in self.elements]
 
     def get_all_rects_in_column(self, column_x) -> typing.List[rectangle.Rectangle]:
-        return [rect for rect in self.elements[column_x][:]]
+        return list(self.elements[column_x][:])
 
     def get_rect_at(self, point: Point) -> rectangle.Rectangle:
         return self.elements[point.x][point.y]
 
+    # pylint: disable=invalid-name
     def _generate(self):
         rect_width = 100
         rect_height = 100
@@ -53,13 +53,15 @@ class Grid:
                 y = (grid_y * rect_height) - rect_width / 2 if grid_y > 0 else 0
 
                 x_adj = rect_width / 2 if grid_x in {0, self.width - 1} else rect_width
-                y_adj = rect_height / 2 if grid_y in {0, self.height - 1} else rect_height
+                y_adj = (
+                    rect_height / 2 if grid_y in {0, self.height - 1} else rect_height
+                )
 
                 rect = rectangle.Rectangle(
                     bl=Point(x, y),
                     br=Point(x + x_adj, y),
                     tl=Point(x, y + y_adj),
-                    tr=Point(x + x_adj, y + y_adj)
+                    tr=Point(x + x_adj, y + y_adj),
                 )
 
                 self.elements[grid_x][grid_y] = rect
@@ -70,18 +72,21 @@ class Path:
     coordinates.
 
     """
+
     filled: typing.List[Point]
     exits: typing.Dict[Dir, exit.Exit]
 
-    def __init__(self, grid_width: int, grid_height: int,
-                 exits: typing.Dict[Dir, exit.Exit]) -> None:
+    def __init__(
+        self, grid_width: int, grid_height: int, exits: typing.Dict[Dir, exit.Exit]
+    ) -> None:
         self.grid_width = grid_width
         self.grid_height = grid_height
         self.exits = exits
         self._calculate_filled()
 
-    def get_path_between(self, current: Point, target: Point,
-                         path: typing.List[Point] = None) -> typing.List[Point]:
+    def get_path_between(
+        self, current: Point, target: Point, path: typing.List[Point] = None
+    ) -> typing.List[Point]:
         """Finds a path between start and target. If two adjacent tiles are an equal
         distance from the target, then searches recursively.
 
@@ -104,7 +109,9 @@ class Path:
                 equidistants = [c for i, c in enumerate(candidates) if dists[i] == min_]
                 for equi in equidistants:
                     # Begin recursive search
-                    remaining_path = self.get_path_between(equi.copy(), target, path.copy())
+                    remaining_path = self.get_path_between(
+                        equi.copy(), target, path.copy()
+                    )
 
                     # Happy halt condition
                     if remaining_path:
@@ -172,6 +179,7 @@ class Path:
 
         return path
 
+    # pylint: disable=no-self-use
     def _get_path_candidates(self, current: Point, target: Point) -> typing.List[Point]:
         """Calculate candidate directions to get closer to the target. Returns a list of
         either one or two candidate directions.
@@ -241,6 +249,7 @@ class ElbowMaker:
 
         return connected, stubs
 
+    # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     def _calculate_elbows(self):
         for direction, start in self.path.exits.items():
             if start.is_blocked:
@@ -255,13 +264,15 @@ class ElbowMaker:
                         start_rect.tl.translate(direction, offset),
                         (
                             start_rect.tr.translate(direction, start_rect.width() / 2)
-                            if is_stub else start_rect.tr
+                            if is_stub
+                            else start_rect.tr
                         ),
                         (
                             start_rect.br.translate(direction, start_rect.width() / 2)
-                            if is_stub else start_rect.br
+                            if is_stub
+                            else start_rect.br
                         ),
-                        start_rect.bl.translate(direction, offset)
+                        start_rect.bl.translate(direction, offset),
                     ]
                 if direction == Dir.UP:
                     inward_dir = Dir.mirror_of(direction)
@@ -271,13 +282,15 @@ class ElbowMaker:
                         start_rect.tr.translate(direction, offset),
                         (
                             start_rect.br.translate(direction, start_rect.width() / 2)
-                            if is_stub else start_rect.br
+                            if is_stub
+                            else start_rect.br
                         ),
                         (
                             start_rect.bl.translate(direction, start_rect.width() / 2)
-                            if is_stub else start_rect.bl
+                            if is_stub
+                            else start_rect.bl
                         ),
-                        start_rect.tl.translate(direction, offset)
+                        start_rect.tl.translate(direction, offset),
                     ]
                 if direction == Dir.RIGHT:
                     inward_dir = Dir.mirror_of(direction)
@@ -287,13 +300,15 @@ class ElbowMaker:
                         start_rect.br.translate(direction, offset),
                         (
                             start_rect.bl.translate(direction, start_rect.width() / 2)
-                            if is_stub else start_rect.bl
+                            if is_stub
+                            else start_rect.bl
                         ),
                         (
                             start_rect.tl.translate(direction, start_rect.width() / 2)
-                            if is_stub else start_rect.tl
+                            if is_stub
+                            else start_rect.tl
                         ),
-                        start_rect.tr.translate(direction, offset)
+                        start_rect.tr.translate(direction, offset),
                     ]
                 if direction == Dir.DOWN:
                     inward_dir = Dir.mirror_of(direction)
@@ -303,13 +318,15 @@ class ElbowMaker:
                         start_rect.bl.translate(direction, offset),
                         (
                             start_rect.bl.translate(direction, start_rect.width() / 2)
-                            if is_stub else start_rect.tl
+                            if is_stub
+                            else start_rect.tl
                         ),
                         (
                             start_rect.tl.translate(direction, start_rect.width() / 2)
-                            if is_stub else start_rect.tr
+                            if is_stub
+                            else start_rect.tr
                         ),
-                        start_rect.br.translate(direction, offset)
+                        start_rect.br.translate(direction, offset),
                     ]
 
             else:
@@ -318,7 +335,9 @@ class ElbowMaker:
                 offset = 30
                 if direction == Dir.LEFT:
                     elbow.append(
-                        self.grid.get_rect_at(start.point).tl.translate(Dir.LEFT, offset)
+                        self.grid.get_rect_at(start.point).tl.translate(
+                            Dir.LEFT, offset
+                        )
                     )
                 if direction == Dir.UP:
                     elbow.append(
@@ -326,11 +345,15 @@ class ElbowMaker:
                     )
                 if direction == Dir.RIGHT:
                     elbow.append(
-                        self.grid.get_rect_at(start.point).br.translate(Dir.RIGHT, offset)
+                        self.grid.get_rect_at(start.point).br.translate(
+                            Dir.RIGHT, offset
+                        )
                     )
                 if direction == Dir.DOWN:
                     elbow.append(
-                        self.grid.get_rect_at(start.point).bl.translate(Dir.DOWN, offset)
+                        self.grid.get_rect_at(start.point).bl.translate(
+                            Dir.DOWN, offset
+                        )
                     )
 
                 # Keep looking clockwise until we find a non-blocked exit
@@ -346,7 +369,7 @@ class ElbowMaker:
 
                 # Add intersections
                 for index, current in enumerate(path):
-                    if index == 0 or index == len(path) - 1:
+                    if index in [0, len(path) - 1]:
                         continue
 
                     prev = path[index - 1]
@@ -364,7 +387,9 @@ class ElbowMaker:
                 # Add target exit point
                 if target_dir == Dir.LEFT:
                     elbow.append(
-                        self.grid.get_rect_at(target.point).bl.translate(Dir.LEFT, offset)
+                        self.grid.get_rect_at(target.point).bl.translate(
+                            Dir.LEFT, offset
+                        )
                     )
                 if target_dir == Dir.UP:
                     elbow.append(
@@ -372,11 +397,15 @@ class ElbowMaker:
                     )
                 if target_dir == Dir.RIGHT:
                     elbow.append(
-                        self.grid.get_rect_at(target.point).tr.translate(Dir.RIGHT, offset)
+                        self.grid.get_rect_at(target.point).tr.translate(
+                            Dir.RIGHT, offset
+                        )
                     )
                 if target_dir == Dir.DOWN:
                     elbow.append(
-                        self.grid.get_rect_at(target.point).br.translate(Dir.DOWN, offset)
+                        self.grid.get_rect_at(target.point).br.translate(
+                            Dir.DOWN, offset
+                        )
                     )
 
             # Insert points between
@@ -388,7 +417,9 @@ class ElbowMaker:
 
                 nex = elbow_cpy[index + 1]
                 points_between = self._calculate_points_between(current, nex)
-                elbow = elbow[:index + offset] + points_between + elbow[index + offset:]
+                elbow = (
+                    elbow[: index + offset] + points_between + elbow[index + offset :]
+                )
 
                 if index != 0:
                     elbow.pop(index + offset - 1)
@@ -398,8 +429,10 @@ class ElbowMaker:
 
             self.elbows[direction] = elbow
 
-    def _calculate_intersection(self, prev: Point, current: Point, nex: Point,
-                                prev_intersect: Point) -> Point:
+    # pylint: disable=too-many-return-statements,invalid-name
+    def _calculate_intersection(
+        self, prev: Point, current: Point, nex: Point, prev_intersect: Point
+    ) -> Point:
         if nex.x == prev.x or nex.y == prev.y:
             # No bend, so return early
             return None
@@ -450,6 +483,8 @@ class ElbowMaker:
                     if corner.x == prev_intersect.x:
                         return corner
 
+        raise ValueError("Unsupported pair to calculate intersection")
+
     def _get_next_exit(self, current: Point, target: Point):
         candidates = []
 
@@ -466,7 +501,7 @@ class ElbowMaker:
             if candidate in self.path.filled:
                 return candidate
 
-        raise Exception('should have found a filled exit')
+        raise Exception("should have found a filled exit")
 
     def _calculate_points_between(self, p1: Point, p2: Point) -> typing.List[Point]:
         x_mult, y_mult, dist = self._mults(p1, p2)
@@ -479,7 +514,7 @@ class ElbowMaker:
             variation = random.randint(-allowed_variation, allowed_variation)
             point = Point(
                 p1.x + (x_mult * i) + (variation if y_mult != 0 else 0),
-                p1.y + (y_mult * i) + (variation if x_mult != 0 else 0)
+                p1.y + (y_mult * i) + (variation if x_mult != 0 else 0),
             )
             points.append(point)
 
@@ -504,6 +539,7 @@ class ElbowMaker:
 
         return x_mult, y_mult, dist
 
+    # pylint: disable=no-self-use
     def _int_sign(self, x):
         return bool(x > 0) - bool(x < 0)
 
@@ -513,42 +549,43 @@ def invert_y(point: Point) -> Point:
     return point.x, 400 - point.y
 
 
-def draw_debug(dwg: svgwrite.Drawing, path: Path, grid: Grid, elbows: ElbowMaker, entities):
+def draw_debug(
+    dwg: svgwrite.Drawing, path: Path, grid: Grid, elbows: ElbowMaker, entities
+):
     for index, filled_point in enumerate(path.filled):
         rect = grid.get_rect_at(filled_point)
-        dwg.add(dwg.rect(
-            insert=invert_y(rect.tl),
-            size=(rect.tr.x - rect.tl.x, rect.tl.y - rect.bl.y),
-            fill='grey',
-        ))
-        dwg.add(dwg.text(
-            text=index,
-            insert=invert_y(rect.centre()),
-        ))
+        dwg.add(
+            dwg.rect(
+                insert=invert_y(rect.tl),
+                size=(rect.tr.x - rect.tl.x, rect.tl.y - rect.bl.y),
+                fill="grey",
+            )
+        )
+        dwg.add(dwg.text(text=index, insert=invert_y(rect.centre()),))
 
     for elbow in elbows.elbows.values():
         for index, point in enumerate(elbow):
-            dwg.add(dwg.circle(
-                center=invert_y(point),
-                fill="red",
-                stroke="brown",
-                stroke_width=10
-            ))
-            dwg.add(dwg.text(
-                text=index,
-                insert=invert_y(point),
-                font_size="20px",
-                font_weight="bold",
-                fill="blue",
-            ))
+            dwg.add(
+                dwg.circle(
+                    center=invert_y(point), fill="red", stroke="brown", stroke_width=10
+                )
+            )
+            dwg.add(
+                dwg.text(
+                    text=index,
+                    insert=invert_y(point),
+                    font_size="20px",
+                    font_weight="bold",
+                    fill="blue",
+                )
+            )
 
     for point in entities:
-        dwg.add(dwg.circle(
-            center=invert_y(point),
-            fill="green",
-            stroke="green",
-            stroke_width=15
-        ))
+        dwg.add(
+            dwg.circle(
+                center=invert_y(point), fill="green", stroke="green", stroke_width=15
+            )
+        )
 
 
 def draw_walls(dwg: svgwrite.Drawing, elbows: ElbowMaker):
@@ -557,55 +594,58 @@ def draw_walls(dwg: svgwrite.Drawing, elbows: ElbowMaker):
     # smooth_line_calc = smoothing.smooth_line(smoothing=0.6, flip_y_height=400)
     smooth_line_calc = smoothing.smooth_line(smoothing=0.2, flip_y_height=400)
     connected, stubs = elbows.connected_elbows()
-    dwg.add(dwg.path(
-        d=smooth_line_calc(connected),
-        fill="#f7faff",
-        stroke="#000000",
-        stroke_width=6
-    ))
-    for stub in stubs:
-        dwg.add(dwg.path(
-            d=smooth_line_calc(stub),
+    dwg.add(
+        dwg.path(
+            d=smooth_line_calc(connected),
             fill="#f7faff",
             stroke="#000000",
-            stroke_width=6
-        ))
+            stroke_width=6,
+        )
+    )
+    for stub in stubs:
+        dwg.add(
+            dwg.path(
+                d=smooth_line_calc(stub),
+                fill="#f7faff",
+                stroke="#000000",
+                stroke_width=6,
+            )
+        )
 
 
-def load_configs(grid: Grid, exit_configs: typing.List[exit_config.ExitConfig]
-                 ) -> typing.Dict[Dir, exit.Exit]:
+def load_configs(
+    grid: Grid, exit_configs: typing.List[exit_config.ExitConfig]
+) -> typing.Dict[Dir, exit.Exit]:
     exits = {}
     for config in exit_configs:
         if config.direction == Dir.UP:
             exits[config.direction] = exit.Exit(
                 Point(x=config.edge_position, y=grid.height - 1),
-                is_blocked=config.is_blocked
+                is_blocked=config.is_blocked,
             )
         if config.direction == Dir.DOWN:
             exits[config.direction] = exit.Exit(
-                Point(x=config.edge_position, y=0),
-                is_blocked=config.is_blocked
+                Point(x=config.edge_position, y=0), is_blocked=config.is_blocked
             )
         if config.direction == Dir.LEFT:
             exits[config.direction] = exit.Exit(
-                Point(x=0, y=config.edge_position),
-                is_blocked=config.is_blocked
+                Point(x=0, y=config.edge_position), is_blocked=config.is_blocked
             )
         if config.direction == Dir.RIGHT:
             exits[config.direction] = exit.Exit(
                 Point(x=grid.width - 1, y=config.edge_position),
-                is_blocked=config.is_blocked
+                is_blocked=config.is_blocked,
             )
 
     return exits
 
 
 def scour_tile(name) -> str:
-    input_path = settings.TILE_OUTPUT_DIR + name + '.svg'
-    output_path = settings.TILE_OUTPUT_DIR + name + '_scoured.svg'
+    input_path = settings.TILE_OUTPUT_DIR + name + ".svg"
+    output_path = settings.TILE_OUTPUT_DIR + name + "_scoured.svg"
     options = scour.parse_args(args=[input_path, output_path])
     scour.start(options, *scour.getInOut(options))
-    return name + '_scoured.svg'
+    return name + "_scoured.svg"
 
 
 def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
@@ -618,14 +658,16 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
     elbows = ElbowMaker(grid, path)
 
     # Valid positions for entities, e.g. for stairs
-    entities = [p * 100 for p in path.filled if (p.x > 0 and p.x < 6 and p.y > 0 and p.y < 4)]
+    entities = [
+        p * 100 for p in path.filled if (p.x > 0 and p.x < 6 and p.y > 0 and p.y < 4)
+    ]
     exits_pos = {d: Point(e.point.x * 100, e.point.y * 100) for d, e in exits.items()}
 
-    name = 'tunnel'
+    name = "tunnel"
     dwg = svgwrite.Drawing(
-        profile='tiny',
-        filename=settings.TILE_OUTPUT_DIR + name + '.svg',
-        size=(tile_.width, tile_.height)
+        profile="tiny",
+        filename=settings.TILE_OUTPUT_DIR + name + ".svg",
+        size=(tile_.width, tile_.height),
     )
     draw_walls(dwg, elbows)
     # draw_debug(dwg, path, grid, elbows, entities)
@@ -636,11 +678,11 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
     return settings.TILE_OUTPUT_DIR, entities, exits_pos, filename
 
 
-if __name__ == '__main__':
-    exit_configs = [
+if __name__ == "__main__":
+    EXIT_CONFIGS = [
         exit_config.ExitConfig(Dir.UP, 4, False),
         exit_config.ExitConfig(Dir.DOWN, 4, True),
         exit_config.ExitConfig(Dir.LEFT, 1, False),
         exit_config.ExitConfig(Dir.RIGHT, 1, False),
     ]
-    render_tile(exit_configs)
+    render_tile(EXIT_CONFIGS)

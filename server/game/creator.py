@@ -11,7 +11,7 @@ from game import builder
 from game import database
 
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def get_or_create_tile(target: Point) -> dict:
@@ -33,16 +33,16 @@ def _create_tile(target) -> dict:
 
 def _add_entities(tile) -> dict:
     used = set()
-    tile['entities'] = {}
-    candidates = tile['entity_candidates'][:]
+    tile["entities"] = {}
+    candidates = tile["entity_candidates"][:]
     random.shuffle(candidates)
     for pos in [Point.deserialize(c) for c in candidates]:
         unused = [e for e in EntityType.all() if e not in used]
         random.shuffle(unused)
         for entity in unused:
-            if random.uniform(0, 1) > _entity_probs[entity]:
+            if random.uniform(0, 1) > _ENTITY_PROBS[entity]:
                 continue
-            tile['entities'][entity.value] = {'pos': pos}
+            tile["entities"][entity.value] = {"pos": pos}
             used.add(entity)
             break
 
@@ -53,7 +53,7 @@ def _add_cards(tile) -> dict:
     return tile
 
 
-_entity_probs = {
+_ENTITY_PROBS = {
     EntityType.STAIRS_UP: 0.025,
     EntityType.STAIRS_UP_SECRET: 0,
     EntityType.STAIRS_DOWN: 0.025,
@@ -66,10 +66,7 @@ def _tile_type() -> TileType:
     return TileType.CAVERN if random.uniform(0, 1) <= prob_cavern else TileType.TUNNEL
 
 
-_tile_probs = {
-    TileType.CAVERN: 0.3,
-    TileType.TUNNEL: 0.7
-}
+_TILE_PROBS = {TileType.CAVERN: 0.3, TileType.TUNNEL: 0.7}
 
 
 def _prob_blockage() -> float:

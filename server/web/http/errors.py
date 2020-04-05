@@ -2,13 +2,13 @@
 
 
 class ApiErrorCode:
-    SERVER_ERROR = 'server_error'
-    PARSE_ERROR = 'parse_error'
-    VALIDATION_ERROR = 'validation_error'
-    INVALID_TOKEN = 'invalid_token'
-    FORBIDDEN = 'forbidden'
-    NOT_FOUND = 'not_found'
-    METHOD_NOT_ALLOWED = 'method_not_allowed'
+    SERVER_ERROR = "server_error"
+    PARSE_ERROR = "parse_error"
+    VALIDATION_ERROR = "validation_error"
+    INVALID_TOKEN = "invalid_token"
+    FORBIDDEN = "forbidden"
+    NOT_FOUND = "not_found"
+    METHOD_NOT_ALLOWED = "method_not_allowed"
 
 
 class ApiException(Exception):
@@ -17,11 +17,13 @@ class ApiException(Exception):
     message = "Something went horribly wrong."
 
     def __init__(self, code=None, message=None):
+        super().__init__()
         if code:
             self.code = code
         if message:
             self.message = message
 
+    # pylint: disable=no-self-use
     def enrich_response_data(self, data):
         return data
 
@@ -29,7 +31,7 @@ class ApiException(Exception):
 class ApiParseError(ApiException):
     status = 400
     code = ApiErrorCode.PARSE_ERROR
-    message = 'I only understand JSON, sorry.'
+    message = "I only understand JSON, sorry."
 
 
 class ApiValidationError(ApiException):
@@ -44,14 +46,14 @@ class ApiValidationError(ApiException):
 
     def enrich_response_data(self, data):
         if self.errors:
-            data['errors'] = self.errors
+            data["errors"] = self.errors
         return data
 
 
 class ApiInvalidToken(ApiException):
     status = 401
     code = ApiErrorCode.INVALID_TOKEN
-    message = 'Invalid or expired token.'
+    message = "Invalid or expired token."
 
 
 class ApiForbidden(ApiException):

@@ -5,6 +5,8 @@ class Rectangle:
     """Simple rectangle, with helper methods.
 
     """
+
+    # pylint: disable=invalid-name
     def __init__(self, bl: Point, br: Point, tl: Point, tr: Point) -> None:
         self.bl = bl
         self.br = br
@@ -27,8 +29,12 @@ class Rectangle:
         return self.tl.y - self.bl.y
 
     def __eq__(self, other) -> bool:
-        return (self.bl == other.bl and self.br == other.br and self.tl == other.tl
-                and self.tr == other.tr)
+        return (
+            self.bl == other.bl
+            and self.br == other.br
+            and self.tl == other.tl
+            and self.tr == other.tr
+        )
 
     def __repr__(self) -> str:
         return f"Rect: (bl={self.bl}, br={self.br}, tl={self.tl}, tr={self.tr})"

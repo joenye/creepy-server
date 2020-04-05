@@ -1,6 +1,7 @@
 from common.enum import Direction
 
 
+# pylint: disable=invalid-name
 class Point:
     """Container for coordinates, as well as helper methods.
 
@@ -9,6 +10,7 @@ class Point:
     :param z: z-coordinate, which defaults to None to indicate a 2D point.
 
     """
+
     def __init__(self, x: int, y: int, z: int = None) -> None:
         self.x = x
         self.y = y
@@ -27,11 +29,10 @@ class Point:
             return Point(self.x, self.y, self.z - amount)
         if direction == Direction.BELOW:
             return Point(self.x, self.y, self.z + amount)
-        else:
-            raise ValueError("Invalid direction: direction={direction}")
+        raise ValueError(f"{direction} is not a supported {Direction.__name__}")
 
     @classmethod
-    def distance_between(self, p1, p2) -> int:
+    def distance_between(cls, p1, p2) -> int:
         return abs(p1.x - p2.x) + abs(p1.y - p2.y)
 
     @classmethod
@@ -48,6 +49,7 @@ class Point:
             return Point(0, 0, -1)
         if direction == Direction.BELOW:
             return Point(0, 0, 1)
+        raise ValueError(f"{direction} is not a supported {Direction.__name__}")
 
     def copy(self):
         return type(self)(x=self.x, y=self.y)
@@ -60,9 +62,9 @@ class Point:
     @classmethod
     def deserialize(cls, serialized: str):
         try:
-            x, y, z = [int(part[2:]) for part in serialized.split(',')]
+            x, y, z = [int(part[2:]) for part in serialized.split(",")]
         except ValueError:
-            x, y = [int(part[2:]) for part in serialized.split(',')]
+            x, y = [int(part[2:]) for part in serialized.split(",")]
             z = None
 
         return Point(x, y, z)

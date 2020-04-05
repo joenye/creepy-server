@@ -7,9 +7,9 @@ from marshmallow import fields, Schema
 from web import marshal
 from game import builder, actions
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
-http_api = flask.Blueprint('http_api', __name__)
+HTTP_API = flask.Blueprint("http_api", __name__)
 
 
 class PositionSchema(Schema):
@@ -24,17 +24,17 @@ class NavigateSchema(Schema):
     available_actions = fields.String(many=True)
 
 
-@http_api.route('/current')
+@HTTP_API.route("/current")
 def current():
     current_pos = actions.get_or_update_current_position()
 
     tile = builder.get_or_create_tile(current_pos)
-    background = tile['background']
+    background = tile["background"]
 
     # Build response
     resp = {
-        'background': background,
-        'current_position': current_pos,
-        'available_actions': actions.get_available_actions(),
+        "background": background,
+        "current_position": current_pos,
+        "available_actions": actions.get_available_actions(),
     }
     return marshal.marshal(resp, schema=NavigateSchema()), 200

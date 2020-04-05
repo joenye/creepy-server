@@ -4,8 +4,10 @@ import typing
 from common.point import Point
 
 
-def calculate_points_between(p1: Point, p2: Point, spacing: int,
-                             wobbliness: int) -> typing.List[Point]:
+# pylint: disable=invalid-name
+def calculate_points_between(
+    p1: Point, p2: Point, spacing: int, wobbliness: int
+) -> typing.List[Point]:
     x_mult, y_mult, dist = _mults(p1, p2)
     # allowed_variation = 10
     # spacing = 30
@@ -16,7 +18,7 @@ def calculate_points_between(p1: Point, p2: Point, spacing: int,
         variation = random.randint(-wobbliness, wobbliness)
         point = Point(
             p1.x + (x_mult * i) + (variation if y_mult != 0 else 0),
-            p1.y + (y_mult * i) + (variation if x_mult != 0 else 0)
+            p1.y + (y_mult * i) + (variation if x_mult != 0 else 0),
         )
         points.append(point)
 

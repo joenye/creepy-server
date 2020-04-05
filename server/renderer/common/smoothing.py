@@ -4,6 +4,7 @@ from typing import Callable, Dict, List
 from common.point import Point
 
 
+# pylint: disable=invalid-name
 def smooth_line(smoothing: float = 0.2, flip_y_height: int = None) -> Callable:
     control_point_calc = _control_point(_line, smoothing)
     bezier_command_calc = _bezier_command(control_point_calc)
@@ -31,12 +32,14 @@ def _line(pointA: Point, pointB: Point) -> Dict[str, float]:
     lengthY = pointB.y - pointA.y
 
     return {
-        'length': math.sqrt(lengthX ** 2 + lengthY ** 2),
-        'angle': math.atan2(lengthY, lengthX)
+        "length": math.sqrt(lengthX ** 2 + lengthY ** 2),
+        "angle": math.atan2(lengthY, lengthX),
     }
 
 
-def _control_point(line_calc: Callable[[Point, Point], dict], smooth: float) -> Callable:
+def _control_point(
+    line_calc: Callable[[Point, Point], dict], smooth: float
+) -> Callable:
     """Creates a function to calculate the position of a control point.
 
     :param line_calc: `Callable` returned by the `line` function.
@@ -44,6 +47,7 @@ def _control_point(line_calc: Callable[[Point, Point], dict], smooth: float) -> 
     :returns: `Callable` to calculate the position of a control point.
 
     """
+
     def fn(
         current: Point, previous: Point, next_: Point, reverse: bool = False
     ) -> Point:
@@ -52,7 +56,7 @@ def _control_point(line_calc: Callable[[Point, Point], dict], smooth: float) -> 
         :param current: Current coordinates.
         :param previous: Previous coordinates.
         :param next_: Next coordinates.
-        :param reverse: Optional boolean specifying whether the direction should be reversed.
+        :param reverse: Whether direction should be reversed.
         :returns: Control point coordinate.
 
         """
@@ -64,8 +68,8 @@ def _control_point(line_calc: Callable[[Point, Point], dict], smooth: float) -> 
         line_props = line_calc(previous, next_)
 
         # If is the end-control-point, add pi to the angle to go backward
-        angle = line_props['angle'] + (math.pi if reverse else 0)
-        length = line_props['length'] * smooth
+        angle = line_props["angle"] + (math.pi if reverse else 0)
+        length = line_props["length"] * smooth
 
         # The control point position is relative to the current point
         x = current.x + math.cos(angle) * length
@@ -83,6 +87,7 @@ def _bezier_command(control_point_calc: Callable[[Point], Point]) -> Callable:
     :returns: `Callable` to calculate a bezier curve command.
 
     """
+
     def fn(point: Point, i: int, list_: List[Point]) -> str:
         """Calculates a bezier curve command.
 
@@ -102,18 +107,17 @@ def _bezier_command(control_point_calc: Callable[[Point], Point]) -> Callable:
             next_ = None
 
         cpe = control_point_calc(
-            current=point,
-            previous=list_[i - 1],
-            next_=next_,
-            reverse=True
+            current=point, previous=list_[i - 1], next_=next_, reverse=True
         )
 
-        return f'C {cp.x},{cp.y} {cpe.x},{cpe.y} {point.x},{point.y}'
+        return f"C {cp.x},{cp.y} {cpe.x},{cpe.y} {point.x},{point.y}"
 
     return fn
 
 
-def _svg_path(points: List[Point], command: Callable[[Point, int, List[Point]], str]) -> str:
+def _svg_path(
+    points: List[Point], command: Callable[[Point, int, List[Point]], str]
+) -> str:
     """Calculates the smoothed SVG path command.
 
     :param points: List of points coordinates.
@@ -121,14 +125,14 @@ def _svg_path(points: List[Point], command: Callable[[Point, int, List[Point]], 
     :return: SVG path command.
 
     """
-    d_ = ''
+    d_ = ""
     for i in range(len(points)):
         point = points[i]
 
         if not d_:
-            d_ = f'M {point.x},{point.y}'
+            d_ = f"M {point.x},{point.y}"
         else:
             seg_cmd = command(point, i, points)
-            d_ = f'{d_} {seg_cmd}'
+            d_ = f"{d_} {seg_cmd}"
 
     return d_

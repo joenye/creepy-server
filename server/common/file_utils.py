@@ -1,7 +1,7 @@
 import os
 
 
-def get_data_path(relative_path: str, filename: str = '') -> str:
+def get_data_path(relative_path: str, filename: str = "") -> str:
     """Returns the absolute path to a file.
 
     :param relative_path: Path relative to the project root.
@@ -13,9 +13,9 @@ def get_data_path(relative_path: str, filename: str = '') -> str:
 
 
 def _data_directory_path(relative_path: str) -> str:
-    dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-    tokens, path = dirname.split(os.sep), ['/']
+    tokens, path = dirname.split(os.sep), ["/"]
     for token in tokens:
         if not token:
             continue
@@ -33,7 +33,7 @@ def load_text_file(file_dir: str, filename: str) -> str:
     :returns: String containing the file's contents, absent newline characters.
 
     """
-    with open(file_dir + '/' + filename, 'r') as myfile:
-        data = myfile.read().replace('\n', '')
+    with open(file_dir + "/" + filename, "r") as myfile:
+        data = myfile.read().replace("\n", "")
 
     return data

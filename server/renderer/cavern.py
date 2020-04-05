@@ -1,18 +1,17 @@
-import os
-import sys
 import random
 import typing
 
 import svgwrite
 from scour import scour
 
-package = os.path.join(os.path.dirname(__file__), '..')
-sys.path.insert(0, os.path.abspath(package))
-
 from common import settings
 from common.point import Point
 from common.enum import Direction as Dir
+
+# pylint: disable=redefined-builtin
 from renderer.common import exit, exit_config, smoothing, tile
+
+# pylint: enable=redefined-builtin
 
 
 class CavernShape:
@@ -28,8 +27,17 @@ class CavernShape:
     :param exit_width: Width of the exits in `Tile` coordinates.
 
     """
-    def __init__(self, origin: Point, width: int, height: int, spacing: int,
-                 wobbliness: int, exits: typing.Dict[Dir, exit.Exit], exit_width: int):
+
+    def __init__(
+        self,
+        origin: Point,
+        width: int,
+        height: int,
+        spacing: int,
+        wobbliness: int,
+        exits: typing.Dict[Dir, exit.Exit],
+        exit_width: int,
+    ):
         self.origin = origin
         self.width = width
         self.height = height
@@ -71,15 +79,19 @@ class CavernShape:
         offset = self.offsets[Dir.UP]
         sides[Dir.UP] += self._create_points(
             start=Point(self.origin.x, self.origin.y + self.height - offset.y),
-            end=Point(self.origin.x + self.width, self.origin.y + self.height - offset.y),
-            increment=Point(self.spacing, 0)
+            end=Point(
+                self.origin.x + self.width, self.origin.y + self.height - offset.y
+            ),
+            increment=Point(self.spacing, 0),
         )
 
         offset = self.offsets[Dir.RIGHT]
         sides[Dir.RIGHT] += self._create_points(
             start=Point(self.origin.x + self.width - offset.x, self.origin.y),
-            end=Point(self.origin.x + self.width - offset.x, self.origin.y + self.height),
-            increment=Point(0, self.spacing)
+            end=Point(
+                self.origin.x + self.width - offset.x, self.origin.y + self.height
+            ),
+            increment=Point(0, self.spacing),
         )
         sides[Dir.RIGHT].reverse()
 
@@ -87,7 +99,7 @@ class CavernShape:
         sides[Dir.DOWN] += self._create_points(
             start=Point(self.origin.x, self.origin.y + offset.y),
             end=Point(self.origin.x + self.width, self.origin.y + offset.y),
-            increment=Point(self.spacing, 0)
+            increment=Point(self.spacing, 0),
         )
         sides[Dir.DOWN].reverse()
 
@@ -95,13 +107,14 @@ class CavernShape:
         sides[Dir.LEFT] += self._create_points(
             start=Point(self.origin.x + offset.x, self.origin.y),
             end=Point(self.origin.x + offset.x, self.origin.y + self.height),
-            increment=Point(0, self.spacing)
+            increment=Point(0, self.spacing),
         )
 
         return sides
 
-    def _create_points(self, start: Point, end: Point,
-                       increment: Point) -> typing.List[Point]:
+    def _create_points(
+        self, start: Point, end: Point, increment: Point
+    ) -> typing.List[Point]:
         dist = start
         new_points = []
 
@@ -140,7 +153,7 @@ class CavernShape:
 
         exit_point = Point(
             exit_.point.x + (start_dir_vector.y * self.exit_width / 2),
-            exit_.point.y - (start_dir_vector.x * self.exit_width / 2)
+            exit_.point.y - (start_dir_vector.x * self.exit_width / 2),
         )
         runge_point = exit_point.translate(start_dir, self.runge_offset)
 
@@ -169,7 +182,7 @@ class CavernShape:
 
         exit_point = Point(
             exit_.point.x - (end_dir_vector.y * self.exit_width / 2),
-            exit_.point.y + (end_dir_vector.x * self.exit_width / 2)
+            exit_.point.y + (end_dir_vector.x * self.exit_width / 2),
         )
         runge_point = exit_point.translate(end_dir, self.runge_offset)
 
@@ -185,7 +198,7 @@ class CavernShape:
                 index = side.index(nearest_side_point)
                 side[index] = Point(side[index].x, exit_point.y)
 
-            for side_point in side[:index + 1]:
+            for side_point in side[: index + 1]:
                 elbow.append(side_point)
 
             # TODO: Mark runge point index.
@@ -231,74 +244,81 @@ def invert_y(point: Point) -> Point:
 def draw_debug(dwg: svgwrite.Drawing, cavern_shape: CavernShape, entities):
     for dir_ in cavern_shape.sides:
         for index, point in enumerate(cavern_shape.sides[dir_]):
-            dwg.add(dwg.circle(
-                center=invert_y(point),
+            dwg.add(
+                dwg.circle(
+                    center=invert_y(point), fill="red", stroke="brown", stroke_width=12
+                )
+            )
+            dwg.add(
+                dwg.text(
+                    insert=invert_y(point),
+                    font_size="30px",
+                    font_weight="bold",
+                    fill="blue",
+                    text=index,
+                )
+            )
+        dwg.add(
+            dwg.circle(
+                center=invert_y(cavern_shape.exits[dir_].point),
                 fill="red",
                 stroke="brown",
-                stroke_width=12
-            ))
-            dwg.add(dwg.text(
-                insert=invert_y(point),
-                font_size="30px",
-                font_weight="bold",
-                fill="blue",
-                text=index
-            ))
-        dwg.add(dwg.circle(
-            center=invert_y(cavern_shape.exits[dir_].point),
-            fill="red",
-            stroke="brown",
-            stroke_width=12
-        ))
+                stroke_width=12,
+            )
+        )
 
     for dir_ in Dir.all_nesw():
         if not cavern_shape.stubs.get(dir_):
             continue
 
         for index, point in enumerate(cavern_shape.stubs[dir_]):
-            dwg.add(dwg.circle(
-                center=invert_y(point),
-                fill="red",
-                stroke="brown",
-                stroke_width=12
-            ))
-            dwg.add(dwg.text(
-                insert=invert_y(point),
-                font_size="30px",
-                font_weight="bold",
-                fill="blue",
-                text=index
-            ))
+            dwg.add(
+                dwg.circle(
+                    center=invert_y(point), fill="red", stroke="brown", stroke_width=12
+                )
+            )
+            dwg.add(
+                dwg.text(
+                    insert=invert_y(point),
+                    font_size="30px",
+                    font_weight="bold",
+                    fill="blue",
+                    text=index,
+                )
+            )
 
     for point in entities:
-        dwg.add(dwg.circle(
-            center=invert_y(point),
-            fill="green",
-            stroke="green",
-            stroke_width=15
-        ))
+        dwg.add(
+            dwg.circle(
+                center=invert_y(point), fill="green", stroke="green", stroke_width=15
+            )
+        )
 
 
 def draw_walls(dwg: svgwrite.Drawing, cavern_shape: CavernShape):
     smooth_line_calc = smoothing.smooth_line(smoothing=0.2, flip_y_height=400)
 
-    dwg.add(dwg.path(
-        d=smooth_line_calc(cavern_shape.perimeter),
-        fill="#f7faff",
-        stroke="#000000",
-        stroke_width=6
-    ))
+    dwg.add(
+        dwg.path(
+            d=smooth_line_calc(cavern_shape.perimeter),
+            fill="#f7faff",
+            stroke="#000000",
+            stroke_width=6,
+        )
+    )
 
     for dir_ in Dir.all_nesw():
         if not cavern_shape.stubs.get(dir_):
             continue
 
-        dwg.add(dwg.path(
-            d=smooth_line_calc(cavern_shape.stubs[dir_]),
-            fill="#f7faff",
-            stroke="#000000",
-            stroke_width=6
-        ))
+        dwg.add(
+            dwg.path(
+                d=smooth_line_calc(cavern_shape.stubs[dir_]),
+                fill="#f7faff",
+                stroke="#000000",
+                stroke_width=6,
+            )
+        )
 
 
 def grid_to_tile(val: int) -> int:
@@ -309,40 +329,42 @@ def grid_to_tile(val: int) -> int:
     raise ValueError(f"invalid grid position: {val}")
 
 
-def load_configs(tile: tile.Tile, exit_configs: typing.List[exit_config.ExitConfig]
-                 ) -> typing.Dict[Dir, exit.Exit]:
+# pylint: disable=W0621
+def load_configs(
+    tile: tile.Tile, exit_configs: typing.List[exit_config.ExitConfig]
+) -> typing.Dict[Dir, exit.Exit]:
     exits = {}
     for config in exit_configs:
         if config.direction == Dir.UP:
             exits[config.direction] = exit.Exit(
                 Point(x=grid_to_tile(config.edge_position), y=tile.height - 1),
-                is_blocked=config.is_blocked
+                is_blocked=config.is_blocked,
             )
         if config.direction == Dir.DOWN:
             exits[config.direction] = exit.Exit(
                 Point(x=grid_to_tile(config.edge_position), y=0),
-                is_blocked=config.is_blocked
+                is_blocked=config.is_blocked,
             )
         if config.direction == Dir.LEFT:
             exits[config.direction] = exit.Exit(
                 Point(x=0, y=grid_to_tile(config.edge_position)),
-                is_blocked=config.is_blocked
+                is_blocked=config.is_blocked,
             )
         if config.direction == Dir.RIGHT:
             exits[config.direction] = exit.Exit(
                 Point(x=tile.width - 1, y=grid_to_tile(config.edge_position)),
-                is_blocked=config.is_blocked
+                is_blocked=config.is_blocked,
             )
 
     return exits
 
 
 def scour_tile(name):
-    input_path = settings.TILE_OUTPUT_DIR + name + '.svg'
-    output_path = settings.TILE_OUTPUT_DIR + name + '_scoured.svg'
+    input_path = settings.TILE_OUTPUT_DIR + name + ".svg"
+    output_path = settings.TILE_OUTPUT_DIR + name + "_scoured.svg"
     options = scour.parse_args(args=[input_path, output_path])
     scour.start(options, *scour.getInOut(options))
-    return name + '_scoured.svg'
+    return name + "_scoured.svg"
 
 
 def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
@@ -367,11 +389,11 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
         for d, e in exits.items()
     }
 
-    name = 'cavern'
+    name = "cavern"
     dwg = svgwrite.Drawing(
-        profile='tiny',
-        filename=settings.TILE_OUTPUT_DIR + name + '.svg',
-        size=(tile_.width, tile_.height)
+        profile="tiny",
+        filename=settings.TILE_OUTPUT_DIR + name + ".svg",
+        size=(tile_.width, tile_.height),
     )
     draw_walls(dwg, cavern_shape)
     # draw_debug(dwg, cavern_shape, entities)
@@ -382,11 +404,11 @@ def render_tile(exit_configs: typing.List[exit_config.ExitConfig]):
     return settings.TILE_OUTPUT_DIR, entities, exits_pos, filename
 
 
-if __name__ == '__main__':
-    exit_configs = [
+if __name__ == "__main__":
+    EXIT_CONFIGS = [
         exit_config.ExitConfig(Dir.UP, 4, False),
         exit_config.ExitConfig(Dir.DOWN, 1, False),
         exit_config.ExitConfig(Dir.LEFT, 3, True),
         exit_config.ExitConfig(Dir.RIGHT, 3, True),
     ]
-    render_tile(exit_configs)
+    render_tile(EXIT_CONFIGS)

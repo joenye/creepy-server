@@ -1,0 +1,2 @@
+[MESSAGES CONTROL]
+disable=W391,E0401,E203,missing-function-docstring,import-outside-toplevel,too-few-public-methods,missing-class-docstring,missing-module-docstring,fixme,bad-continuation,C0200,R0902,R0913,R0801
