@@ -24,20 +24,21 @@ def get_or_create_tile(target: Point) -> dict:
 
 def _create_tile(target) -> dict:
     new_tile = builder.TileBuilder(target, _tile_type(), _prob_blockage())()
-    new_tile = _add_entities(new_tile)
+    new_tile = _add_entities(new_tile, target)
     new_tile = _add_cards(new_tile)
 
     database.insert_or_update_tile(target, new_tile)
     return new_tile
 
 
-def _add_entities(tile) -> dict:
+def _add_entities(tile, target) -> dict:
     used = set()
     tile["entities"] = {}
     candidates = tile["entity_candidates"][:]
     random.shuffle(candidates)
+    valid_entities = _get_valid_entities(target)
     for pos in [Point.deserialize(c) for c in candidates]:
-        unused = [e for e in EntityType.all() if e not in used]
+        unused = [e for e in valid_entities if e not in used]
         random.shuffle(unused)
         for entity in unused:
             if random.uniform(0, 1) > _ENTITY_PROBS[entity]:
@@ -47,6 +48,14 @@ def _add_entities(tile) -> dict:
             break
 
     return tile
+
+
+def _get_valid_entities(target):
+    entities = EntityType.all()
+    if target.z == 0:
+        # Don't show upwards stairs on top floor
+        entities.remove(EntityType.STAIRS_UP)
+    return entities
 
 
 def _add_cards(tile) -> dict:
