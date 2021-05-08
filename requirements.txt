@@ -1,4 +1,4 @@
-eventlet==0.25.1
+eventlet==0.31.0
 flask==1.1.2
 flask-socketio==4.2.1
 marshmallow==3.5.1
